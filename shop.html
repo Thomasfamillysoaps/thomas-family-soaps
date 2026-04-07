@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop Our Soaps | Thomas Family Soaps</title>
+    <link rel="stylesheet" href="shop.css">
+</head>
+<body>
+
+    <header class="store-header">
+        <img src="tfs logo.png" alt="Thomas Family Soaps Logo" class="logo">
+        <h1>Shop Our Soaps</h1>
+        <p>Handcrafted homemade soaps made with love</p>
+
+        <nav class="navbar">
+    <a href="index.html">Home</a>
+    <a href="about.html">About Us</a>
+    <a href="shop.html">Shop Our Soaps</a>
+    <a href="contact.html">Contact Us</a>
+    <a href="cart.html" id="cart-link">🛒 View Your Cart (0)</a>
+    <a href="orders.html">📦 My Orders</a>
+</nav>
+    </header>
+
+    <section class="shop-section">
+        <h2>Our Soap Collection</h2>
+
+        <div class="products-grid">
+
+            <div class="product-card">
+                <img src="Monkey business.png" alt="Monkey Business Soap">
+                <h3>Monkey Business</h3>
+                <p>$7.00</p>
+                <p class="stock-status" id="stock-monkey">In Stock: 10</p>
+                <label for="qty-monkey">Quantity:</label>
+<select id="qty-monkey">
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+    <option value="6">6</option>
+    <option value="7">7</option>
+    <option value="8">8</option>
+    <option value="9">9</option>
+    <option value="10">10</option>
+</select>
+                <button id="btn-monkey" onclick="addToCartWithQuantity('Monkey Business', 7, 'Monkey business.png', 'qty-monkey', 'stock-monkey', 'btn-monkey')">
+                    Add To Cart
+                </button>
+            </div>
+
+            <div class="product-card">
+                <img src="justpeachy.png" alt="Just Peachy Soap">
+                <h3>Just Peachy</h3>
+                <p>$7.00</p>
+                <p class="stock-status" id="stock-peachy">In Stock: 10</p>
+                <label for="qty-peachy">Quantity</label>
+                <select id="qty-peachy">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+                <button id="btn-peachy" onclick="addToCartWithQuantity('Just Peachy', 7, 'justpeachy.png', 'qty-peachy', 'stock-peachy', 'btn-peachy')">
+                    Add To Cart
+                </button>
+            </div>
+
+            <div class="product-card">
+                <img src="GreenApple.png" alt="Green Apple Soap">
+                <h3>Green Apple</h3>
+                <p>$7.00</p>
+                <p class="stock-status" id="stock-apple">In Stock: 10</p>
+                <label for="qty-apple">Quantity</label>
+                <select id="qty-apple">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+                <button id="btn-apple" onclick="addToCartWithQuantity('Green Apple', 7, 'GreenApple.png', 'qty-apple', 'stock-apple', 'btn-apple')">
+                    Add To Cart
+                </button>
+            </div>
+
+            <div class="product-card">
+                <img src="tropicalbreeze.png" alt="Tropical Breeze Soap">
+                <h3>Tropical Breeze</h3>
+                <p>$7.00</p>
+                <p class="stock-status" id="stock-breeze">In Stock: 10</p>
+                <label for="qty-breeze">Quantity</label>
+                <select id="qty-breeze">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+                <button id="btn-breeze" onclick="addToCartWithQuantity('Tropical Breeze', 7, 'tropicalbreeze.png','qty-breeze', 'stock-breeze', 'btn-breeze')">
+                    Add To Cart
+                </button>
+            </div>
+            
+            <div class="product-card">
+                <img src="beachbum.png" alt="Beach Bum Soap">
+                <h3>Beach Bum</h3>
+                <p>$7.00</p>
+                <p class="stock-status" id="stock-beachbum">In Stock: 10</p>
+                <label for="qty-beachbum">Quantity</label>
+                <select id="qty-beachbum">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+                <button id="btn-beachbum" onclick="addToCartWithQuantity('Beach Bum', 7, 'beachbum.png', 'qty-beachbum', 'stock-beachbum', 'btn-beachbum')">
+                    Add To Cart
+                </button>
+            </div>
+            <div class="product-card">
+                <img src="GeorgiaPeaches.png" alt="Georgia Peaches Soap">
+                <h3>Georgia Peaches</h3>
+                <p>$7.00</p>
+                <p class="stock-status" id="stock-georgia">In Stock: 10</p>
+                <label for="qty-georgia">Quantity</label>
+                <select id="qty-georgia">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+                <button id="btn-georgia" onclick="addToCartWithQuantity('Georgia Peaches', 7, 'GeorgiaPeaches.png', 'qty-georgia', 'stock-georgia', 'btn-georgia')">
+                    Add To Cart
+                </button>
+            </div>
+            <div class="product-card">
+                <img src="MidnightFreeze.png" alt="Midnight Freeze Soap" class="rotate-soap">
+                <h3>Midnight Freeze</h3>
+                <p>$7.00</p>
+                <p class="stock-status" id="stock-freeze">In Stock: 10</p>
+                <label for="qty-freeze">Quantity</label>
+                <select id="qty-freeze">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+                <button id="btn-freeze" onclick="addToCartWithQuantity('Midnight Freeze', 7, 'MidnightFreeze.png', 'qty-freeze', 'stock-freeze', 'btn-freeze')">
+                    Add To Cart
+                </button>
+            </div>
+            <div class="product-card">
+                <img src="castaway.png" alt="Castaway Island Soap">
+                <h3>Castaway Island</h3>
+                <p>$7.00</p>
+                <p class="stock-status" id="stock-castaway">In Stock: 10</p>
+                <label for="qty-castaway">Quantity</label>
+                <select id="qty-castaway">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+                <button id="btn-castaway" onclick="addToCartWithQuantity('Castaway Island', 7, 'castaway.png', 'qty-castaway', 'stock-castaway', 'btn-castaway')">
+                    Add To Cart
+                </button>
+            </div>
+
+        </div>
+    </section>
+
+    <footer class="site-footer">
+        <p>© 2026 Thomas Family Soaps. All Rights Reserved.</p>
+    </footer>
+
+    <script src="cart.js"></script>
+
+</body>
+</html>
+    <footer class="footer">
+    <div class="container">
+        <p>&copy; 2026 Thomas Family Soaps. All rights reserved.</p>
+        <p class="footer-links">
+            <a href="legal.html#privacy-policy">Privacy Policy</a> |
+            <a href="legal.html#terms-conditions">Terms &amp; Conditions</a> |
+            <a href="legal.html#refund-policy">Refund Policy</a> |
+            <a href="legal.html#shipping-policy">Shipping Policy</a>
+        </p>
+    </div>
+</footer>

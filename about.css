@@ -1,0 +1,111 @@
+body {
+    background: #f8d7da;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* Header */
+.store-header {
+    text-align: center;
+    padding: 30px 20px;
+    color: white;
+    background: #d62828;
+}
+
+.logo {
+    width: 120px;
+    height: auto;
+    margin-bottom: 15px;
+}
+
+/* Navbar */
+.navbar {
+    margin-top: 20px;
+}
+
+.navbar a {
+    color: white;
+    text-decoration: none;
+    margin: 0 15px;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.navbar a:hover {
+    text-decoration: underline;
+}
+
+.ingredients-box {
+    margin-top: 35px;
+    padding: 25px;
+    background: #fff5f7;
+    border: 2px solid #f4a7b9;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+}
+
+.ingredients-box h2 {
+    color: #d62828;
+    font-size: 30px;
+    margin-bottom: 15px;
+}
+
+.ingredients-box p {
+    font-size: 18px;
+    line-height: 1.7;
+    margin-bottom: 15px;
+}
+
+/* Ingredient bullets */
+.ingredients-list {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+}
+
+.ingredients-list li {
+    font-size: 18px;
+    padding: 10px;
+    margin: 8px 0;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+/* About content box */
+.about-section {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 35px;
+    background: white;
+    color: #222;
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+    text-align: center;
+    line-height: 1.8;
+}
+
+.about-section h2 {
+    font-size: 34px;
+    color: #d62828;
+    margin-bottom: 20px;
+}
+
+.about-section p {
+    font-size: 18px;
+    margin-bottom: 18px;
+}
+.footer-links {
+    margin-top: 10px;
+}
+
+.footer-links a {
+    color: #fff;
+    text-decoration: none;
+    margin: 0 6px;
+}
+
+.footer-links a:hover {
+    text-decoration: underline;
+}

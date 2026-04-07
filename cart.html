@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart & Checkout | Thomas Family Soaps</title>
+    <link rel="stylesheet" href="shop.css">
+</head>
+<body>
+
+    <header class="store-header">
+        <img src="tfs logo.png" alt="Thomas Family Soaps Logo" class="logo">
+        <h1>Your Shopping Cart</h1>
+
+        <nav class="navbar">
+    <a href="index.html">Home</a>
+    <a href="about.html">About Us</a>
+    <a href="shop.html">Shop Our Soaps</a>
+    <a href="contact.html">Contact Us</a>
+    <a href="cart.html" id="cart-link">🛒 View Your Cart (0)</a>
+    <a href="orders.html">📦 My Orders</a>
+</nav>
+    </header>
+
+    <section class="cart-page">
+        <div id="cart-items"></div>
+        <h2 id="total-price">Subtotal: $0.00</h2>
+    </section>
+
+    <form class="checkout-form" id="checkout-form">
+        <h2>Shipping Information</h2>
+
+        <input type="text" name="customer_name" id="customer-name" placeholder="Full Name" required>
+        <input type="text" name="street_address" id="street-address" placeholder="Street Address" required>
+        <input type="text" name="city" id="city" placeholder="City" required>
+        <input type="text" name="state" id="state" placeholder="State" required>
+        <input type="text" name="zip" id="zip" placeholder="ZIP Code" required>
+        <input type="email" name="customer_email" id="customer-email" placeholder="Email Address" required>
+
+        <select name="shipping_method" id="shipping-method">
+            <option value="5.99">Standard Shipping - $5.99</option>
+            <option value="9.99">Priority Shipping - $9.99</option>
+        </select>
+
+        <p id="shipping-notice" class="shipping-notice">
+            Orders are handcrafted and carefully packed before shipment.
+            You will receive an email confirmation once your order has been prepared.
+        </p>
+
+        <input type="hidden" name="order_items" id="order-items-field">
+        <input type="hidden" name="order_total" id="order-total-field">
+        <input type="hidden" name="order_number" id="order-number-field">
+
+        <h3 id="final-total">Final Total: $0.00</h3>
+
+        <button type="submit" id="checkout-btn">Proceed to Checkout</button>
+
+        <div class="checkout-trust">
+            <p>🔒 Secure checkout powered by Stripe</p>
+            <p>📦 Fast shipping with careful packaging</p>
+            <p>🧼 Handmade with quality ingredients</p>
+            <p>💌 Questions? Contact us anytime</p>
+        </div>
+    </form>
+
+    <script src="cart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        localStorage.removeItem("checkoutStarted");
+
+        const checkoutForm = document.getElementById("checkout-form");
+        const shippingMethod = document.getElementById("shipping-method");
+
+        if (shippingMethod) {
+            shippingMethod.addEventListener("change", updateTotal);
+        }
+
+        if (checkoutForm) {
+            checkoutForm.addEventListener("submit", checkout);
+        }
+    });
+
+    async function checkout(event) {
+        event.preventDefault();
+
+        const checkoutBtn = document.getElementById("checkout-btn");
+
+        prepareOrder();
+        localStorage.removeItem("orderCompleted");
+        localStorage.removeItem("lastCompletedOrder");
+
+        const cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+        if (cart.length === 0) {
+            alert("Your cart is empty.");
+            return;
+        }
+
+        checkoutBtn.disabled = true;
+        checkoutBtn.textContent = "Processing...";
+
+        const shipping = parseFloat(
+            document.getElementById("shipping-method").value
+        ) || 0;
+
+        localStorage.setItem("lastShipping", shipping);
+        localStorage.setItem("checkoutStarted", "true");
+
+        try {
+            const response = await fetch("http://localhost:4242/checkout", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    cart,
+                    shipping
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.url) {
+                window.location.href = data.url;
+            } else {
+                localStorage.removeItem("checkoutStarted");
+                checkoutBtn.disabled = false;
+                checkoutBtn.textContent = "Proceed to Checkout";
+                alert(data.error || "Checkout error.");
+            }
+        } catch (error) {
+            localStorage.removeItem("checkoutStarted");
+            checkoutBtn.disabled = false;
+            checkoutBtn.textContent = "Proceed to Checkout";
+            console.error(error);
+            alert("Checkout failed. Make sure server.js is running.");
+        }
+    }
+</script>
+
+</body>
+</html>
+<footer class="footer">
+    <div class="container">
+        <p>&copy; 2026 Thomas Family Soaps. All rights reserved.</p>
+        <p class="footer-links">
+            <a href="legal.html#privacy-policy">Privacy Policy</a> |
+            <a href="legal.html#terms-conditions">Terms &amp; Conditions</a> |
+            <a href="legal.html#refund-policy">Refund Policy</a> |
+            <a href="legal.html#shipping-policy">Shipping Policy</a>
+        </p>
+    </div>
+</footer>

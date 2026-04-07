@@ -1,0 +1,168 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Georgia, serif;
+    background: linear-gradient(to bottom, #ef4136, #f86a5e);
+    color: white;
+}
+
+.hero {
+    text-align: center;
+    padding: 30px;
+    position: relative;
+}
+
+.logo {
+    width: 120px;
+    display: block;
+    margin: 0 auto 15px;
+}
+
+.hero h2 {
+    text-align: center;
+    font-size: 56px;
+    margin: 10px 0;
+}
+
+.tagline {
+    font-size: 22px;
+    margin-bottom: 20px
+}
+
+#email {
+    text-decoration: underline;
+    color: #ef4136;
+}
+
+.navbar {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+}
+
+.navbar a {
+    color: white;
+    text-decoration: none;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.navbar a:hover {
+    text-decoration: underline;
+}
+
+.cart-icon {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    display: inline-block;
+    font-size: 32px;
+}
+
+.cart-count {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: white;
+    color: #ef4136;
+    border-radius: 50%;
+    width: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+.contact-section {
+    display: flex;
+    justify-content: center;
+    padding: 50px 20px;
+}
+
+.contact-card {
+    background: white;
+    color: #333;
+    width: 700px;
+    max-width: 90%;
+    border-radius: 16px;
+    padding: 40px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.2)
+}
+
+.contact-card h2 {
+    text-align: center;
+    font-size: 42px;
+    color: #ef4136;
+}
+
+.contact-text {
+    text-align: center;
+    font-size: 18px;
+    margin-bottom: 30px;
+}
+
+.contact-info {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.contact-info a {
+    color: white;
+    text-decoration: underline;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    max-width: 500px;
+    margin: 40px auto;
+}
+
+.contact-form input,
+.contact-form textarea {
+    width: 100%;
+    max-width: 500px;
+    padding: 14px;
+    margin: 12px auto;
+    border: 2px solid #ef4136;
+    font-size: 16px;
+    box-sizing: border-box;
+    display: block;
+}
+
+.contact-form button {
+     width: 220px;
+    padding: 12px;
+    margin: 20px auto 0;
+    display: block;
+    background: #ef4136;
+    color: white;
+    border: 2px solid white;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: center;
+}
+
+.contact-form button:hover {
+    background: #d8342a;
+}
+
+.footer-links {
+    margin-top: 10px;
+}
+
+.footer-links a {
+    color: #fff;
+    text-decoration: none;
+    margin: 0 6px;
+}
+
+.footer-links a:hover {
+    text-decoration: underline;
+}

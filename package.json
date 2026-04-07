@@ -1,0 +1,26 @@
+{
+  "name": "thomas-family-soaps",
+  "version": "1.0.0",
+  "description": "Thomas Family Soaps ecommerce website",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "soap",
+    "ecommerce",
+    "stripe",
+    "express"
+  ],
+  "author": "Thomas Family Soaps",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.1",
+    "express": "^5.2.1",
+    "node.js": "^0.0.1-security",
+    "stripe": "^22.0.0"
+  }
+}
