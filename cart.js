@@ -3,7 +3,7 @@
 // Thomas Family Soaps
 // =========================
 
-// Default stock
+// Default stock fallback
 const defaultStock = {
     "Monkey Business": 10,
     "Just Peachy": 10,
@@ -15,22 +15,26 @@ const defaultStock = {
     "Castaway Island": 10
 };
 
+let stockCache = { ...defaultStock };
+
 // =========================
 // INVENTORY
 // =========================
-function getStock() {
-    let stock = JSON.parse(localStorage.getItem("inventory"));
+async function getStock() {
+    try {
+        const response = await fetch("/api/stock");
 
-    if (!stock) {
-        localStorage.setItem("inventory", JSON.stringify(defaultStock));
-        return { ...defaultStock };
+        if (!response.ok) {
+            throw new Error("Failed to load stock");
+        }
+
+        const stock = await response.json();
+        stockCache = stock;
+        return stock;
+    } catch (error) {
+        console.error("STOCK FETCH ERROR:", error);
+        return stockCache;
     }
-
-    return stock;
-}
-
-function saveStock(stock) {
-    localStorage.setItem("inventory", JSON.stringify(stock));
 }
 
 // =========================
@@ -101,14 +105,14 @@ function addToCart(name, price, image = "") {
     showToast(name + " added to cart!");
 }
 
-function addToCartWithQuantity(name, price, image, qtyId, stockId, buttonId) {
-    let stock = getStock();
+async function addToCartWithQuantity(name, price, image, qtyId, stockId, buttonId) {
+    let stock = await getStock();
     let quantityInput = document.getElementById(qtyId);
 
     if (!quantityInput) return;
 
     let quantity = parseInt(quantityInput.value);
-    let currentStock = stock[name];
+    let currentStock = stock[name] ?? 0;
 
     if (isNaN(quantity) || quantity < 1) {
         showToast("Please select a valid quantity.");
@@ -148,13 +152,13 @@ function addToCartWithQuantity(name, price, image, qtyId, stockId, buttonId) {
     showToast(quantity + " " + name + " added to cart!");
 }
 
-function addToCartWithStock(name, price, image, stockId, buttonId) {
-    let stock = getStock();
+async function addToCartWithStock(name, price, image, stockId, buttonId) {
+    let stock = await getStock();
 
     let stockElement = document.getElementById(stockId);
     let button = document.getElementById(buttonId);
 
-    let currentStock = stock[name];
+    let currentStock = stock[name] ?? 0;
 
     if (currentStock <= 0) {
         if (stockElement) {
@@ -183,15 +187,15 @@ function addToCartWithStock(name, price, image, stockId, buttonId) {
 // =========================
 // STOCK DISPLAY
 // =========================
-function updateStockDisplay(name, stockId, buttonId) {
-    let stock = getStock();
+async function updateStockDisplay(name, stockId, buttonId) {
+    let stock = await getStock();
 
     let stockElement = document.getElementById(stockId);
     let button = document.getElementById(buttonId);
 
     if (!stockElement || !button) return;
 
-    let currentStock = stock[name];
+    let currentStock = stock[name] ?? 0;
 
     if (currentStock <= 0) {
         stockElement.textContent = "SOLD OUT";
@@ -200,6 +204,7 @@ function updateStockDisplay(name, stockId, buttonId) {
         button.textContent = "SOLD OUT";
     } else {
         stockElement.textContent = "In Stock: " + currentStock;
+        stockElement.classList.remove("sold-out");
         button.disabled = false;
         button.textContent = "Add To Cart";
     }
@@ -270,9 +275,9 @@ function removeFromCart(index) {
     updateCartCount();
 }
 
-function changeQuantity(index, change) {
+async function changeQuantity(index, change) {
     let cart = getCart();
-    let stock = getStock();
+    let stock = await getStock();
 
     let item = cart[index];
     if (!item) return;
@@ -284,7 +289,7 @@ function changeQuantity(index, change) {
         return;
     }
 
-    if (newQuantity > stock[item.name]) {
+    if (newQuantity > (stock[item.name] ?? 0)) {
         showToast("Not enough stock available!");
         return;
     }
@@ -355,6 +360,8 @@ function prepareOrder() {
 
 // =========================
 // COMPLETE PURCHASE
+// THIS NO LONGER CHANGES STOCK
+// SERVER HANDLES STOCK NOW
 // =========================
 function completePurchase() {
     if (localStorage.getItem("checkoutStarted") !== "true") return;
@@ -363,7 +370,6 @@ function completePurchase() {
     let cart = getCart();
     if (cart.length === 0) return;
 
-    let stock = getStock();
     let shipping = parseFloat(localStorage.getItem("lastShipping")) || 0;
     let orderNumber = localStorage.getItem("orderNumber");
 
@@ -376,14 +382,6 @@ function completePurchase() {
 
     cart.forEach(item => {
         subtotal += item.price * item.quantity;
-
-        if (stock[item.name] !== undefined) {
-            stock[item.name] -= item.quantity;
-
-            if (stock[item.name] < 0) {
-                stock[item.name] = 0;
-            }
-        }
     });
 
     let total = subtotal + shipping;
@@ -403,8 +401,6 @@ function completePurchase() {
 
     saveOrders(orders);
     localStorage.setItem("lastCompletedOrder", JSON.stringify(newOrder));
-
-    saveStock(stock);
 
     localStorage.removeItem("cart");
     localStorage.removeItem("checkoutInfo");
