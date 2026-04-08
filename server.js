@@ -142,8 +142,8 @@ app.post("/checkout", async (req, res) => {
                 shipping: String(shipping)
             },
 
-            success_url: `${BASE_URL}/success.html`,
-            cancel_url: `${BASE_URL}/cart.html`
+            success_url: `${BASE_URL}/success`,
+            cancel_url: `${BASE_URL}/cart`
         });
 
         res.json({ url: session.url });
