@@ -588,76 +588,54 @@ function updateCartCount() {
 // =========================
 
 async function lookupOrder() {
-    const orderInput = document.getElementById("order-number");
-    const resultsBox = document.getElementById("order-results");
-    const messageBox = document.getElementById("order-lookup-message");
+    const orderNumber = document.getElementById("order-number")?.value.trim();
+    const email = document.getElementById("order-email")?.value.trim();
+    const resultBox = document.getElementById("order-result");
 
-    if (!orderInput || !resultsBox || !messageBox) return;
+    if (resultBox) {
+        resultBox.innerHTML = "";
+    }
 
-    const orderNumber = orderInput.value.trim();
-
-    resultsBox.innerHTML = "";
-    messageBox.innerHTML = "";
-
-    if (!orderNumber) {
-        messageBox.innerHTML = "<p>Please enter your order number.</p>";
+    if (!orderNumber || !email) {
+        if (resultBox) {
+            resultBox.innerHTML = `<p style="color:red;">Please enter both your order number and email.</p>`;
+        } else {
+            alert("Please enter both your order number and email.");
+        }
         return;
     }
 
     try {
-        const response = await fetch(`/api/orders/${encodeURIComponent(orderNumber)}`);
+        const res = await fetch("/lookup-order", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ orderNumber, email })
+        });
 
-        const data = await response.json();
+        const data = await res.json();
 
-        if (!response.ok) {
-            throw new Error(data.error || "Order not found.");
+        if (!res.ok) {
+            if (resultBox) {
+                resultBox.innerHTML = `<p style="color:red;">Order not found. Check your info.</p>`;
+            } else {
+                alert("Order not found. Check your info.");
+            }
+            return;
         }
 
-        const items = Array.isArray(data.items) ? data.items : [];
-
-        const itemsHtml = items.map(item => `
-            <p>${item.name} × ${item.quantity} — $${(Number(item.price || 0) * Number(item.quantity || 0)).toFixed(2)}</p>
-        `).join("");
-
-        const shippingAddress = data.shippingAddress ||
-            [data.street, data.city, data.state, data.zip].filter(Boolean).join(", ") ||
-            "Not provided";
-
-        resultsBox.innerHTML = `
-            <div class="order-card">
-                <h3>Order #${data.orderNumber || "N/A"}</h3>
-
-                <div class="order-meta">
-                    <p><strong>Status:</strong> ${data.status || "Paid"}</p>
-                    <p><strong>Date:</strong> ${data.date || "Not provided"}</p>
-                    <p><strong>Name:</strong> ${data.customerName || "Not provided"}</p>
-                    <p><strong>Email:</strong> ${data.customerEmail || "Not provided"}</p>
-                    <p><strong>Shipping Method:</strong> ${data.shippingMethod || "Not provided"}</p>
-                    <p><strong>Address:</strong> ${shippingAddress}</p>
-                    <p><strong>Subtotal:</strong> $${Number(data.subtotal || 0).toFixed(2)}</p>
-                    <p><strong>Shipping:</strong> $${Number(data.shipping || 0).toFixed(2)}</p>
-                    <p><strong>Total:</strong> $${Number(data.total || 0).toFixed(2)}</p>
-                </div>
-
-                <div class="order-items">
-                    <h4>Items Ordered</h4>
-                    ${itemsHtml || "<p>No items found.</p>"}
-                </div>
-            </div>
-        `;
+        displayOrder(data);
     } catch (error) {
         console.error("ORDER LOOKUP ERROR:", error);
-        messageBox.innerHTML = `<p>${error.message}</p>`;
+
+        if (resultBox) {
+            resultBox.innerHTML = `<p style="color:red;">Something went wrong while looking up your order.</p>`;
+        } else {
+            alert("Something went wrong while looking up your order.");
+        }
     }
 }
-
-window.addEventListener("DOMContentLoaded", () => {
-    const lookupBtn = document.getElementById("find-order-btn");
-
-    if (lookupBtn) {
-        lookupBtn.addEventListener("click", lookupOrder);
-    }
-});
 
 // =========================
 // PAGE LOAD
@@ -691,4 +669,9 @@ window.onload = function () {
             field.addEventListener("change", saveCheckoutInfo);
         }
     });
+    const findOrderBtn = document.getElementById("find-order-btn");
+
+if (findOrderBtn) {
+    findOrderBtn.addEventListener("click", lookupOrder);
+}
 };

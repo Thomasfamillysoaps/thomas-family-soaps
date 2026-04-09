@@ -218,25 +218,45 @@ app.get("/api/orders", requireAdmin, (req, res) => {
 // -------------------------
 // API ROUTE - GET ONE ORDER BY ORDER NUMBER
 // -------------------------
-app.get("/api/orders/:orderNumber", (req, res) => {
-    try {
-        const { orderNumber } = req.params;
-        const order = findOrderByOrderNumber(orderNumber);
 
-        if (!order) {
-            return res.status(404).json({
-                error: "Order not found."
-            });
+async function lookupOrder() {
+    const orderNumber = document.getElementById("order-number")?.value.trim();
+    const email = document.getElementById("order-email")?.value.trim();
+
+    const messageBox = document.getElementById("order-lookup-message");
+    const resultsBox = document.getElementById("order-results");
+
+    if (messageBox) messageBox.innerHTML = "";
+    if (resultsBox) resultsBox.innerHTML = "";
+
+    if (!orderNumber || !email) {
+        messageBox.innerHTML = `<p style="color:red;">Please enter both your order number and email.</p>`;
+        return;
+    }
+
+    try {
+        const res = await fetch("/lookup-order", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ orderNumber, email })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            messageBox.innerHTML = `<p style="color:red;">Order not found. Check your info.</p>`;
+            return;
         }
 
-        res.json(order);
+        displayOrder(data);
+
     } catch (error) {
-        console.error("ORDER LOOKUP ERROR:", error);
-        res.status(500).json({
-            error: "Failed to find order."
-        });
+        console.error("LOOKUP ERROR:", error);
+        messageBox.innerHTML = `<p style="color:red;">Something went wrong. Try again.</p>`;
     }
-});
+}
 
 // -------------------------
 // API ROUTE - GET ORDER BY STRIPE SESSION ID
