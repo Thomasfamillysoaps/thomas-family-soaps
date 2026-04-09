@@ -3,13 +3,6 @@
 // SERVER-BASED VERSION
 // =========================
 
-// -------------------------
-// SIMPLE ADMIN PAGE GUARD
-// -------------------------
-if (localStorage.getItem("adminAuth") !== "true") {
-    window.location.href = "/admin-login.html";
-}
-
 const inventoryList = document.getElementById("inventory-list");
 const ordersList = document.getElementById("orders-list");
 const adminStatusMessage = document.getElementById("admin-status-message");
@@ -20,6 +13,8 @@ const refreshOrdersBtn = document.getElementById("refresh-orders-btn");
 // HELPERS
 // -------------------------
 function setStatus(message, type = "") {
+    if (!adminStatusMessage) return;
+
     adminStatusMessage.textContent = message;
     adminStatusMessage.className = "admin-status-message";
 
@@ -46,7 +41,7 @@ function escapeHtml(text) {
 }
 
 function slugify(text) {
-    return String(text)
+    return String(text || "")
         .toLowerCase()
         .replace(/\s+/g, "-")
         .replace(/[^a-z0-9-]/g, "");
@@ -68,17 +63,45 @@ function formatShippingAddress(order) {
         order.zip
     ].filter(Boolean);
 
-    if (parts.length === 0) {
-        return "Not provided";
-    }
+    return parts.length ? parts.join(", ") : "Not provided";
+}
 
-    return parts.join(", ");
+// -------------------------
+// SERVER AUTH CHECK
+// -------------------------
+async function checkAdminAuth() {
+    try {
+        const response = await fetch("/api/admin/check", {
+            method: "GET",
+            credentials: "include"
+        });
+
+        if (!response.ok) {
+            window.location.href = "/admin-login.html";
+            return false;
+        }
+
+        return true;
+    } catch (error) {
+        console.error("ADMIN CHECK ERROR:", error);
+        window.location.href = "/admin-login.html";
+        return false;
+    }
 }
 
 // -------------------------
 // LOGOUT
 // -------------------------
-function logout() {
+async function logout() {
+    try {
+        await fetch("/admin-logout", {
+            method: "POST",
+            credentials: "include"
+        });
+    } catch (error) {
+        console.error("LOGOUT ERROR:", error);
+    }
+
     localStorage.removeItem("adminAuth");
     window.location.href = "/admin-login.html";
 }
@@ -87,22 +110,28 @@ function logout() {
 // STOCK
 // -------------------------
 async function loadStock() {
+    if (!inventoryList) return;
+
     inventoryList.innerHTML = `<p class="empty-message">Loading inventory...</p>`;
 
     try {
-        const response = await fetch("/api/stock");
+        const response = await fetch("/api/admin/stock", {
+            method: "GET",
+            credentials: "include"
+        });
+
+        const data = await response.json();
 
         if (!response.ok) {
-            throw new Error("Failed to load stock.");
+            throw new Error(data.error || "Failed to load stock.");
         }
 
-        const stock = await response.json();
-        renderStock(stock);
+        renderStock(data);
         setStatus("Admin data loaded.", "success");
     } catch (error) {
         console.error("LOAD STOCK ERROR:", error);
         inventoryList.innerHTML = `<p class="empty-message">Could not load inventory.</p>`;
-        setStatus("Could not load inventory from server.", "error");
+        setStatus(error.message || "Could not load inventory from server.", "error");
     }
 }
 
@@ -144,6 +173,8 @@ function renderStock(stock) {
 
 async function updateStock(productName) {
     const input = document.getElementById(`stock-input-${slugify(productName)}`);
+    if (!input) return;
+
     const newStock = parseInt(input.value, 10);
 
     if (isNaN(newStock) || newStock < 0) {
@@ -157,6 +188,7 @@ async function updateStock(productName) {
             headers: {
                 "Content-Type": "application/json"
             },
+            credentials: "include",
             body: JSON.stringify({
                 productName,
                 stock: newStock
@@ -181,21 +213,27 @@ async function updateStock(productName) {
 // ORDERS
 // -------------------------
 async function loadOrders() {
+    if (!ordersList) return;
+
     ordersList.innerHTML = `<p class="empty-message">Loading orders...</p>`;
 
     try {
-        const response = await fetch("/api/admin/orders");
+        const response = await fetch("/api/admin/orders", {
+            method: "GET",
+            credentials: "include"
+        });
+
+        const data = await response.json();
 
         if (!response.ok) {
-            throw new Error("Failed to load orders.");
+            throw new Error(data.error || "Failed to load orders.");
         }
 
-        const orders = await response.json();
-        renderOrders(orders);
+        renderOrders(data);
     } catch (error) {
         console.error("LOAD ORDERS ERROR:", error);
         ordersList.innerHTML = `<p class="empty-message">Could not load orders.</p>`;
-        setStatus("Could not load orders from server.", "error");
+        setStatus(error.message || "Could not load orders from server.", "error");
     }
 }
 
@@ -211,7 +249,7 @@ function renderOrders(orders) {
         const itemsHtml = items.map(item => `
             <p>
                 ${escapeHtml(item.name)} × ${Number(item.quantity || 0)}
-                — ${formatMoney((Number(item.price || 0) * Number(item.quantity || 0)))}
+                — ${formatMoney(Number(item.price || 0) * Number(item.quantity || 0))}
             </p>
         `).join("");
 
@@ -265,6 +303,7 @@ async function deleteOrder(orderNumber) {
             headers: {
                 "Content-Type": "application/json"
             },
+            credentials: "include",
             body: JSON.stringify({ orderNumber })
         });
 
@@ -296,7 +335,10 @@ if (refreshOrdersBtn) {
 // -------------------------
 // PAGE LOAD
 // -------------------------
-window.addEventListener("DOMContentLoaded", () => {
+window.addEventListener("DOMContentLoaded", async () => {
+    const isAuthed = await checkAdminAuth();
+    if (!isAuthed) return;
+
     loadStock();
     loadOrders();
 });
