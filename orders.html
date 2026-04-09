@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Find My Order | Thomas Family Soaps</title>
-    <link rel="stylesheet" href="success.css">
+    <link rel="stylesheet" href="orders.css">
 </head>
 <body>
 
@@ -22,32 +22,29 @@
         </nav>
     </header>
 
-    <section class="success-container">
-        <h2>Look Up Your Order</h2>
-        <p class="success-message">
-            Enter your full order number below to view your order details.
-        </p>
+    <main class="orders-page">
+        <section class="lookup-card">
+            <h2>Look Up Your Order</h2>
+            <p class="lookup-intro">
+                Enter your full order number below to view your order details.
+            </p>
 
-        <div class="order-summary">
-            <input
-                type="text"
-                id="order-lookup-input"
-                placeholder="Enter order number (example: TFS-1234567890)"
-                style="width: 100%; max-width: 420px; padding: 12px; font-size: 16px; border-radius: 10px; border: 1px solid #ccc; margin-bottom: 15px;"
-            >
-            <br>
-            <button
-                type="button"
-                class="continue-btn"
-                id="lookup-order-btn"
-            >
-                Find My Order
-            </button>
-        </div>
+            <div class="lookup-form">
+                <input
+                    type="text"
+                    id="order-number"
+                    placeholder="Enter order number (example: TFS-1234567890)"
+                    autocomplete="off"
+                >
+                <button type="button" id="find-order-btn" class="lookup-btn">
+                    Find My Order
+                </button>
+            </div>
 
-        <p id="lookup-order-number" class="order-number"></p>
-        <div id="lookup-order-result" class="order-summary" style="display:none;"></div>
-    </section>
+            <div id="order-lookup-message" class="lookup-message"></div>
+            <div id="order-results" class="order-results"></div>
+        </section>
+    </main>
 
     <footer class="footer">
         <div class="container">
@@ -61,25 +58,6 @@
         </div>
     </footer>
 
-<section class="order-lookup-section">
-    <h2>Find Your Order</h2>
-    <p>Enter your order number below to view your order.</p>
-
-    <div class="lookup-form">
-        <input
-            type="text"
-            id="order-number"
-            placeholder="Enter your order number"
-        >
-
-        <button type="button" id="find-order-btn">Find My Order</button>
-    </div>
-
-    <div id="order-lookup-message"></div>
-    <div id="order-results"></div>
-</section>
-
-<script src="cart.js?v=3"></script>
-
+    <script src="cart.js?v=3"></script>
 </body>
 </html>

@@ -1,0 +1,210 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #fdecef;
+    color: #333;
+}
+
+.store-header {
+    background-color: #d62828;
+    color: white;
+    text-align: center;
+    padding: 20px 15px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.logo {
+    width: 90px;
+    max-width: 100%;
+    margin-bottom: 10px;
+}
+
+.store-header h1 {
+    margin: 10px 0;
+    font-size: 2rem;
+}
+
+.navbar {
+    margin-top: 15px;
+}
+
+.navbar a {
+    color: white;
+    text-decoration: none;
+    margin: 0 10px;
+    font-weight: bold;
+    display: inline-block;
+    padding: 6px 0;
+}
+
+.navbar a:hover {
+    text-decoration: underline;
+}
+
+.orders-page {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.lookup-card {
+    background-color: white;
+    border-radius: 18px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+    padding: 35px 25px;
+    text-align: center;
+}
+
+.lookup-card h2 {
+    color: #d62828;
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 2rem;
+}
+
+.lookup-intro {
+    font-size: 1rem;
+    margin-bottom: 25px;
+    color: #555;
+}
+
+.lookup-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.lookup-form input {
+    width: 100%;
+    max-width: 450px;
+    padding: 14px 16px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    box-sizing: border-box;
+}
+
+.lookup-form input:focus {
+    outline: none;
+    border-color: #d62828;
+    box-shadow: 0 0 0 3px rgba(214, 40, 40, 0.15);
+}
+
+.lookup-btn {
+    background-color: #d62828;
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: 0.25s ease;
+}
+
+.lookup-btn:hover {
+    background-color: white;
+    color: #d62828;
+    border: 2px solid #d62828;
+}
+
+.lookup-message {
+    margin-top: 10px;
+    margin-bottom: 20px;
+    font-weight: bold;
+    color: #d62828;
+    min-height: 24px;
+}
+
+.order-results {
+    margin-top: 20px;
+    text-align: left;
+}
+
+.order-card {
+    background-color: #fff8f8;
+    border: 1px solid #f3c7c7;
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+.order-card h3 {
+    color: #d62828;
+    margin-top: 0;
+    margin-bottom: 18px;
+    text-align: center;
+}
+
+.order-meta p,
+.order-items p {
+    margin: 8px 0;
+    line-height: 1.5;
+}
+
+.order-items {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #e7bcbc;
+}
+
+.order-items h4 {
+    margin-top: 0;
+    color: #d62828;
+}
+
+.footer {
+    background-color: #d62828;
+    color: white;
+    text-align: center;
+    padding: 20px 15px;
+    margin-top: 40px;
+}
+
+.footer .container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.footer-links {
+    margin-top: 10px;
+}
+
+.footer-links a {
+    color: white;
+    text-decoration: underline;
+}
+
+.footer-links a:hover {
+    opacity: 0.85;
+}
+
+@media (max-width: 768px) {
+    .store-header h1 {
+        font-size: 1.7rem;
+    }
+
+    .navbar a {
+        display: block;
+        margin: 8px 0;
+    }
+
+    .lookup-card {
+        padding: 25px 18px;
+    }
+
+    .lookup-card h2 {
+        font-size: 1.6rem;
+    }
+
+    .lookup-btn {
+        width: 100%;
+        max-width: 450px;
+    }
+
+    .order-card {
+        padding: 18px;
+    }
+}
