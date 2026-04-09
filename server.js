@@ -11,6 +11,7 @@ const PORT = process.env.PORT || 4242;
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 
 const STOCK_FILE = path.join(__dirname, "stock.json");
+const ORDERS_FILE = path.join(__dirname, "orders.json");
 
 // -------------------------
 // MIDDLEWARE
@@ -25,19 +26,67 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
 // -------------------------
+// FILE HELPERS
+// -------------------------
+function readJsonFile(filePath, fallbackValue) {
+    try {
+        if (!fs.existsSync(filePath)) {
+            fs.writeFileSync(filePath, JSON.stringify(fallbackValue, null, 2));
+            return fallbackValue;
+        }
+
+        const raw = fs.readFileSync(filePath, "utf8").trim();
+
+        if (!raw) {
+            fs.writeFileSync(filePath, JSON.stringify(fallbackValue, null, 2));
+            return fallbackValue;
+        }
+
+        return JSON.parse(raw);
+    } catch (error) {
+        console.error(`FILE READ ERROR (${filePath}):`, error);
+        return fallbackValue;
+    }
+}
+
+function writeJsonFile(filePath, data) {
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+}
+
+// -------------------------
 // STOCK HELPERS
 // -------------------------
 function readStock() {
-    if (!fs.existsSync(STOCK_FILE)) {
-        return {};
-    }
-
-    const raw = fs.readFileSync(STOCK_FILE, "utf8");
-    return JSON.parse(raw);
+    return readJsonFile(STOCK_FILE, {});
 }
 
 function saveStock(stock) {
-    fs.writeFileSync(STOCK_FILE, JSON.stringify(stock, null, 2));
+    writeJsonFile(STOCK_FILE, stock);
+}
+
+// -------------------------
+// ORDER HELPERS
+// -------------------------
+function readOrders() {
+    return readJsonFile(ORDERS_FILE, []);
+}
+
+function saveOrders(orders) {
+    writeJsonFile(ORDERS_FILE, orders);
+}
+
+function generateOrderNumber() {
+    return `TFS-${Date.now()}`;
+}
+
+function findOrderBySessionId(sessionId) {
+    const orders = readOrders();
+    return orders.find(order => order.stripeSessionId === sessionId);
+}
+
+function findOrderByOrderNumber(orderNumber) {
+    const orders = readOrders();
+    return orders.find(order => order.orderNumber === orderNumber);
 }
 
 // -------------------------
@@ -53,6 +102,14 @@ app.get("/success", (req, res) => {
 
 app.get("/cart", (req, res) => {
     res.sendFile(path.join(__dirname, "cart.html"));
+});
+
+app.get("/orders", (req, res) => {
+    res.sendFile(path.join(__dirname, "orders.html"));
+});
+
+app.get("/admin", (req, res) => {
+    res.sendFile(path.join(__dirname, "admin.html"));
 });
 
 // -------------------------
@@ -71,12 +128,154 @@ app.get("/api/stock", (req, res) => {
 });
 
 // -------------------------
+// API ROUTE - GET ALL ORDERS
+// Customer-facing for now
+// Later we can lock this down / replace it
+// -------------------------
+app.get("/api/orders", (req, res) => {
+    try {
+        const orders = readOrders();
+        res.json(orders);
+    } catch (error) {
+        console.error("ORDERS READ ERROR:", error);
+        res.status(500).json({
+            error: "Failed to read orders."
+        });
+    }
+});
+
+// -------------------------
+// API ROUTE - GET ONE ORDER BY ORDER NUMBER
+// -------------------------
+app.get("/api/orders/:orderNumber", (req, res) => {
+    try {
+        const { orderNumber } = req.params;
+        const order = findOrderByOrderNumber(orderNumber);
+
+        if (!order) {
+            return res.status(404).json({
+                error: "Order not found."
+            });
+        }
+
+        res.json(order);
+    } catch (error) {
+        console.error("ORDER LOOKUP ERROR:", error);
+        res.status(500).json({
+            error: "Failed to find order."
+        });
+    }
+});
+
+// -------------------------
+// API ROUTE - GET ORDER BY STRIPE SESSION ID
+// Used for success page later
+// -------------------------
+app.get("/api/order/session/:sessionId", (req, res) => {
+    try {
+        const { sessionId } = req.params;
+        const order = findOrderBySessionId(sessionId);
+
+        if (!order) {
+            return res.status(404).json({
+                error: "Order not found for this session."
+            });
+        }
+
+        res.json(order);
+    } catch (error) {
+        console.error("SESSION ORDER LOOKUP ERROR:", error);
+        res.status(500).json({
+            error: "Failed to find session order."
+        });
+    }
+});
+
+// -------------------------
+// ADMIN ROUTES
+// NOT SECURED YET
+// We secure these in next step
+// -------------------------
+app.get("/api/admin/orders", (req, res) => {
+    try {
+        const orders = readOrders();
+        res.json(orders);
+    } catch (error) {
+        console.error("ADMIN ORDERS READ ERROR:", error);
+        res.status(500).json({
+            error: "Failed to read admin orders."
+        });
+    }
+});
+
+app.post("/api/admin/update-stock", (req, res) => {
+    try {
+        const { productName, stock } = req.body;
+
+        if (!productName || typeof stock !== "number" || stock < 0) {
+            return res.status(400).json({
+                error: "Valid productName and stock are required."
+            });
+        }
+
+        const currentStock = readStock();
+        currentStock[productName] = stock;
+        saveStock(currentStock);
+
+        res.json({
+            success: true,
+            message: `${productName} stock updated.`,
+            stock: currentStock
+        });
+    } catch (error) {
+        console.error("ADMIN STOCK UPDATE ERROR:", error);
+        res.status(500).json({
+            error: "Failed to update stock."
+        });
+    }
+});
+
+app.post("/api/admin/delete-order", (req, res) => {
+    try {
+        const { orderNumber } = req.body;
+
+        if (!orderNumber) {
+            return res.status(400).json({
+                error: "Order number is required."
+            });
+        }
+
+        const orders = readOrders();
+        const updatedOrders = orders.filter(order => order.orderNumber !== orderNumber);
+
+        if (updatedOrders.length === orders.length) {
+            return res.status(404).json({
+                error: "Order not found."
+            });
+        }
+
+        saveOrders(updatedOrders);
+
+        res.json({
+            success: true,
+            message: `Order ${orderNumber} deleted.`
+        });
+    } catch (error) {
+        console.error("ADMIN DELETE ORDER ERROR:", error);
+        res.status(500).json({
+            error: "Failed to delete order."
+        });
+    }
+});
+
+// -------------------------
 // CHECKOUT
 // -------------------------
 app.post("/checkout", async (req, res) => {
     try {
         const cart = req.body.cart || [];
-        const shipping = req.body.shipping || 0;
+        const shipping = Number(req.body.shipping || 0);
+        const orderNumber = req.body.orderNumber || generateOrderNumber();
 
         if (cart.length === 0) {
             return res.status(400).json({
@@ -86,7 +285,6 @@ app.post("/checkout", async (req, res) => {
 
         const stock = readStock();
 
-        // Make sure customer is not trying to buy more than available
         for (const item of cart) {
             const available = stock[item.name] ?? 0;
 
@@ -135,18 +333,20 @@ app.post("/checkout", async (req, res) => {
                 allowed_countries: ["US"]
             },
             line_items: lineItems,
-
-            // Save cart data in Stripe session
+            client_reference_id: orderNumber,
             metadata: {
+                orderNumber,
                 cart: JSON.stringify(cart),
                 shipping: String(shipping)
             },
-
-            success_url: `${BASE_URL}/success`,
+            success_url: `${BASE_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${BASE_URL}/cart`
         });
 
-        res.json({ url: session.url });
+        res.json({
+            url: session.url,
+            orderNumber
+        });
     } catch (error) {
         console.error("CHECKOUT ERROR:", error);
         res.status(500).json({
@@ -157,11 +357,10 @@ app.post("/checkout", async (req, res) => {
 
 // -------------------------
 // STRIPE WEBHOOK
-// THIS updates stock ONLY after payment succeeds
+// Save order + update stock after successful payment
 // -------------------------
 app.post("/webhook", (req, res) => {
     const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
     let event;
 
     try {
@@ -179,7 +378,71 @@ app.post("/webhook", (req, res) => {
         const session = event.data.object;
 
         try {
-            const cart = JSON.parse(session.metadata.cart || "[]");
+            const cart = JSON.parse(session.metadata?.cart || "[]");
+            const shipping = Number(session.metadata?.shipping || 0);
+            const orderNumber =
+                session.metadata?.orderNumber ||
+                session.client_reference_id ||
+                generateOrderNumber();
+
+            const subtotal = cart.reduce((total, item) => {
+                return total + (Number(item.price || 0) * Number(item.quantity || 0));
+            }, 0);
+
+            const total = subtotal + shipping;
+
+            const customerName =
+                session.customer_details?.name ||
+                session.shipping_details?.name ||
+                "Not provided";
+
+            const customerEmail =
+                session.customer_details?.email ||
+                "Not provided";
+
+            const shippingAddressObject = session.shipping_details?.address || {};
+            const shippingAddress = [
+                shippingAddressObject.line1,
+                shippingAddressObject.line2,
+                shippingAddressObject.city,
+                shippingAddressObject.state,
+                shippingAddressObject.postal_code,
+                shippingAddressObject.country
+            ]
+                .filter(Boolean)
+                .join(", ");
+
+            const newOrder = {
+                orderNumber,
+                stripeSessionId: session.id,
+                stripePaymentIntent: session.payment_intent || "",
+                items: cart,
+                subtotal,
+                shipping,
+                total,
+                status: "Paid",
+                date: new Date().toLocaleString(),
+                customerName,
+                customerEmail,
+                shippingMethod: shipping > 0 ? `Shipping - $${shipping.toFixed(2)}` : "Free",
+                shippingAddress,
+                street: shippingAddressObject.line1 || "",
+                city: shippingAddressObject.city || "",
+                state: shippingAddressObject.state || "",
+                zip: shippingAddressObject.postal_code || ""
+            };
+
+            const existingOrder = findOrderBySessionId(session.id);
+
+            if (!existingOrder) {
+                const orders = readOrders();
+                orders.unshift(newOrder);
+                saveOrders(orders);
+                console.log(`✅ Order saved: ${orderNumber}`);
+            } else {
+                console.log(`ℹ️ Order already exists for session ${session.id}`);
+            }
+
             const stock = readStock();
 
             cart.forEach(item => {
@@ -195,7 +458,7 @@ app.post("/webhook", (req, res) => {
             saveStock(stock);
             console.log("✅ Stock updated after successful payment.");
         } catch (error) {
-            console.error("STOCK UPDATE ERROR:", error);
+            console.error("WEBHOOK ORDER/STOCK ERROR:", error);
         }
     }
 

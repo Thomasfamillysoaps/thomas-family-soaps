@@ -1,0 +1,195 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #fdeeee;
+    color: #333;
+}
+
+.store-header {
+    background-color: #b22222;
+    color: white;
+    text-align: center;
+    padding: 20px;
+}
+
+.logo {
+    width: 100px;
+    max-width: 100%;
+    margin-bottom: 10px;
+}
+
+.store-header h1 {
+    margin: 10px 0;
+    font-size: 2rem;
+}
+
+.navbar {
+    margin-top: 10px;
+}
+
+.navbar a {
+    color: white;
+    text-decoration: none;
+    margin: 0 12px;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.navbar a:hover {
+    text-decoration: underline;
+}
+
+.admin-page {
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 0 20px;
+    display: grid;
+    gap: 25px;
+}
+
+.card {
+    background: white;
+    border-radius: 18px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.10);
+    padding: 24px;
+}
+
+.card h2 {
+    margin-top: 0;
+    color: #b22222;
+}
+
+.admin-status-message {
+    margin-top: 10px;
+    font-weight: bold;
+    color: #8b0000;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.inventory-list,
+.orders-list {
+    display: grid;
+    gap: 18px;
+}
+
+.inventory-item,
+.order-card {
+    background-color: #fff9f9;
+    border: 1px solid #f1d7d7;
+    border-radius: 14px;
+    padding: 18px;
+}
+
+.inventory-item h3,
+.order-card h3 {
+    margin-top: 0;
+    color: #8b0000;
+}
+
+.inventory-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.stock-edit-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
+.stock-edit-group input {
+    width: 110px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 1rem;
+}
+
+.action-btn,
+.save-btn,
+.delete-btn {
+    background-color: #b22222;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.action-btn:hover,
+.save-btn:hover,
+.delete-btn:hover {
+    background-color: white;
+    color: #b22222;
+    border: 2px solid #b22222;
+}
+
+.delete-btn {
+    margin-top: 12px;
+}
+
+.order-meta p,
+.order-items p {
+    margin: 6px 0;
+    line-height: 1.5;
+}
+
+.order-items {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #edd4d4;
+}
+
+.empty-message {
+    color: #777;
+    font-style: italic;
+}
+
+.success-text {
+    color: #0b7a28;
+    font-weight: bold;
+}
+
+.error-text {
+    color: #b00020;
+    font-weight: bold;
+}
+
+.site-footer {
+    background-color: #b22222;
+    color: white;
+    text-align: center;
+    padding: 15px;
+    margin-top: 40px;
+}
+
+@media (max-width: 768px) {
+    .inventory-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .stock-edit-group {
+        width: 100%;
+    }
+
+    .stock-edit-group input {
+        width: 100%;
+        max-width: 200px;
+    }
+}

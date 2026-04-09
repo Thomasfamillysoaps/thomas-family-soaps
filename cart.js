@@ -71,21 +71,10 @@ function saveCart(cart) {
     localStorage.setItem("cart", JSON.stringify(cart));
 }
 
-function getOrders() {
-    return JSON.parse(localStorage.getItem("orders")) || [];
-}
-
-function saveOrders(orders) {
-    localStorage.setItem("orders", JSON.stringify(orders));
-}
-
 // =========================
 // ADD TO CART
 // =========================
 function addToCart(name, price, image = "") {
-    localStorage.removeItem("orderCompleted");
-    localStorage.removeItem("lastCompletedOrder");
-
     let cart = getCart();
     let existingItem = cart.find(item => item.name === name);
 
@@ -111,7 +100,7 @@ async function addToCartWithQuantity(name, price, image, qtyId, stockId, buttonI
 
     if (!quantityInput) return;
 
-    let quantity = parseInt(quantityInput.value);
+    let quantity = parseInt(quantityInput.value, 10);
     let currentStock = stock[name] ?? 0;
 
     if (isNaN(quantity) || quantity < 1) {
@@ -145,10 +134,7 @@ async function addToCartWithQuantity(name, price, image, qtyId, stockId, buttonI
     }
 
     saveCart(cart);
-    localStorage.removeItem("orderCompleted");
-    localStorage.removeItem("lastCompletedOrder");
     updateCartCount();
-
     showToast(quantity + " " + name + " added to cart!");
 }
 
@@ -165,10 +151,12 @@ async function addToCartWithStock(name, price, image, stockId, buttonId) {
             stockElement.textContent = "SOLD OUT";
             stockElement.classList.add("sold-out");
         }
+
         if (button) {
             button.disabled = true;
             button.textContent = "SOLD OUT";
         }
+
         return;
     }
 
@@ -340,11 +328,11 @@ function prepareOrder() {
 
     let orderText = cart.map(item => `${item.name} x${item.quantity}`).join(", ");
 
-    let orderNumber = localStorage.getItem("orderNumber");
+    let orderNumber = localStorage.getItem("pendingOrderNumber");
 
     if (!orderNumber) {
         orderNumber = "TFS-" + Date.now();
-        localStorage.setItem("orderNumber", orderNumber);
+        localStorage.setItem("pendingOrderNumber", orderNumber);
     }
 
     if (orderItemsField) {
@@ -356,74 +344,6 @@ function prepareOrder() {
     }
 
     updateTotal();
-}
-
-// =========================
-// COMPLETE PURCHASE
-// THIS NO LONGER CHANGES STOCK
-// SERVER HANDLES STOCK NOW
-// =========================
-function completePurchase() {
-    if (localStorage.getItem("checkoutStarted") !== "true") return;
-    if (localStorage.getItem("orderCompleted")) return;
-
-    let cart = getCart();
-    if (cart.length === 0) return;
-
-    let shipping = parseFloat(localStorage.getItem("lastShipping")) || 0;
-    let orderNumber = localStorage.getItem("orderNumber");
-
-    if (!orderNumber) {
-        orderNumber = "TFS-" + Date.now();
-        localStorage.setItem("orderNumber", orderNumber);
-    }
-
-    let subtotal = 0;
-
-    cart.forEach(item => {
-        subtotal += item.price * item.quantity;
-    });
-
-    let total = subtotal + shipping;
-    let orders = getOrders();
-
-    const newOrder = {
-        orderNumber,
-        items: cart,
-        subtotal,
-        shipping,
-        total,
-        date: new Date().toLocaleString(),
-        status: "Paid"
-    };
-
-    orders.unshift(newOrder);
-
-    saveOrders(orders);
-    localStorage.setItem("lastCompletedOrder", JSON.stringify(newOrder));
-
-    localStorage.removeItem("cart");
-    localStorage.removeItem("checkoutInfo");
-    localStorage.removeItem("orderNumber");
-    localStorage.setItem("orderCompleted", "true");
-}
-
-// =========================
-// CART COUNT
-// =========================
-function updateCartCount() {
-    let cart = getCart();
-    let cartLink = document.getElementById("cart-link");
-
-    if (!cartLink) return;
-
-    let totalItems = 0;
-
-    cart.forEach(item => {
-        totalItems += item.quantity;
-    });
-
-    cartLink.textContent = `🛒 View Your Cart (${totalItems})`;
 }
 
 // =========================
@@ -479,86 +399,184 @@ function loadCheckoutInfo() {
 }
 
 // =========================
-// SUCCESS PAGE
+// CHECKOUT
 // =========================
-function displayOrderSummary() {
-    let savedOrder = JSON.parse(localStorage.getItem("lastCompletedOrder"));
-    let summary = document.getElementById("order-summary");
+async function startCheckout() {
+    const cart = getCart();
 
-    if (!summary || !savedOrder) return;
+    if (cart.length === 0) {
+        showToast("Your cart is empty.");
+        return;
+    }
 
-    let html = "<h3>Your Order Summary</h3>";
+    const shippingDropdown = document.getElementById("shipping-method");
+    const shipping = parseFloat(shippingDropdown?.value || 0) || 0;
 
-    savedOrder.items.forEach(item => {
-        let itemTotal = item.price * item.quantity;
+    let orderNumber = localStorage.getItem("pendingOrderNumber");
+    if (!orderNumber) {
+        orderNumber = "TFS-" + Date.now();
+        localStorage.setItem("pendingOrderNumber", orderNumber);
+    }
 
-        html += `
-            <p>${item.name} × ${item.quantity}</p>
-            <p>$${itemTotal.toFixed(2)}</p>
-        `;
-    });
+    try {
+        const response = await fetch("/checkout", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                cart,
+                shipping,
+                orderNumber
+            })
+        });
 
-    html += `<hr>`;
-    html += `<p>Subtotal: $${savedOrder.subtotal.toFixed(2)}</p>`;
-    html += `<p>Shipping: $${savedOrder.shipping.toFixed(2)}</p>`;
-    html += `<p><strong>Total Paid: $${savedOrder.total.toFixed(2)}</strong></p>`;
+        const data = await response.json();
 
-    summary.innerHTML = html;
+        if (!response.ok) {
+            throw new Error(data.error || "Checkout failed.");
+        }
+
+        window.location.href = data.url;
+    } catch (error) {
+        console.error("CHECKOUT START ERROR:", error);
+        alert(error.message || "Checkout failed.");
+    }
 }
 
-function displayOrderNumber() {
-    let savedOrder = JSON.parse(localStorage.getItem("lastCompletedOrder"));
-    let display = document.getElementById("order-number-display");
+// =========================
+// SUCCESS PAGE
+// =========================
+async function loadOrderFromSession() {
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get("session_id");
 
-    if (!display || !savedOrder) return;
+    const summary = document.getElementById("order-summary");
+    const orderNumberDisplay = document.getElementById("order-number-display");
 
-    display.textContent = "Order #: " + savedOrder.orderNumber;
+    if (!summary || !orderNumberDisplay) return;
+
+    if (!sessionId) {
+        orderNumberDisplay.textContent = "We could not find your order session.";
+        summary.innerHTML = "<p>Please contact us if your payment went through but this page did not load correctly.</p>";
+        return;
+    }
+
+    summary.innerHTML = "<p>Loading your order...</p>";
+
+    try {
+        const response = await fetch(`/api/order/session/${encodeURIComponent(sessionId)}`);
+        const order = await response.json();
+
+        if (!response.ok) {
+            throw new Error(order.error || "Could not load order.");
+        }
+
+        localStorage.removeItem("cart");
+        localStorage.removeItem("checkoutInfo");
+        localStorage.removeItem("pendingOrderNumber");
+
+        orderNumberDisplay.textContent = "Order #: " + (order.orderNumber || "N/A");
+
+        let html = "<h3>Your Order Summary</h3>";
+
+        (order.items || []).forEach(item => {
+            let itemTotal = Number(item.price || 0) * Number(item.quantity || 0);
+
+            html += `
+                <p>${item.name} × ${item.quantity}</p>
+                <p>$${itemTotal.toFixed(2)}</p>
+            `;
+        });
+
+        html += "<hr>";
+        html += `<p>Subtotal: $${Number(order.subtotal || 0).toFixed(2)}</p>`;
+        html += `<p>Shipping: $${Number(order.shipping || 0).toFixed(2)}</p>`;
+        html += `<p><strong>Total Paid: $${Number(order.total || 0).toFixed(2)}</strong></p>`;
+
+        summary.innerHTML = html;
+    } catch (error) {
+        console.error("SUCCESS ORDER LOAD ERROR:", error);
+        orderNumberDisplay.textContent = "We could not load your order details.";
+        summary.innerHTML = "<p>Please contact us if your payment went through but this page did not load correctly.</p>";
+    }
 }
 
 // =========================
 // ORDERS PAGE
 // =========================
-function displayOrders() {
-    let orders = getOrders();
+async function displayOrders() {
     let container = document.getElementById("orders-list");
 
     if (!container) return;
 
-    if (orders.length === 0) {
-        container.innerHTML = "<p>No previous orders found.</p>";
-        return;
-    }
+    container.innerHTML = "<p>Loading your orders...</p>";
 
-    let html = "";
+    try {
+        const response = await fetch("/api/orders");
+        const orders = await response.json();
 
-    orders.forEach(order => {
-        let itemsHtml = "";
+        if (!response.ok) {
+            throw new Error(orders.error || "Could not load orders.");
+        }
 
-        order.items.forEach(item => {
-            itemsHtml += `
-                <p>${item.name} × ${item.quantity}</p>
+        if (!Array.isArray(orders) || orders.length === 0) {
+            container.innerHTML = "<p>No previous orders found.</p>";
+            return;
+        }
+
+        let html = "";
+
+        orders.forEach(order => {
+            let itemsHtml = "";
+
+            (order.items || []).forEach(item => {
+                itemsHtml += `
+                    <p>${item.name} × ${item.quantity}</p>
+                `;
+            });
+
+            html += `
+                <div class="order-summary">
+                    <h3>${order.orderNumber || "Order"}</h3>
+                    <p>${order.date || ""}</p>
+                    <p>Status: ${order.status || "Paid"}</p>
+
+                    <div class="order-items-list">
+                        <h4>Items Ordered:</h4>
+                        ${itemsHtml}
+                    </div>
+
+                    <p>Subtotal: $${Number(order.subtotal || 0).toFixed(2)}</p>
+                    <p>Shipping: $${Number(order.shipping || 0).toFixed(2)}</p>
+                    <p><strong>Total: $${Number(order.total || 0).toFixed(2)}</strong></p>
+                </div>
             `;
         });
 
-        html += `
-            <div class="order-summary">
-                <h3>${order.orderNumber}</h3>
-                <p>${order.date}</p>
-                <p>Status: ${order.status}</p>
+        container.innerHTML = html;
+    } catch (error) {
+        console.error("DISPLAY ORDERS ERROR:", error);
+        container.innerHTML = "<p>Could not load orders right now.</p>";
+    }
+}
 
-                <div class="order-items-list">
-                    <h4>Items Ordered:</h4>
-                    ${itemsHtml}
-                </div>
+// =========================
+// CART COUNT
+// =========================
+function updateCartCount() {
+    let cart = getCart();
+    let cartLink = document.getElementById("cart-link");
 
-                <p>Subtotal: $${order.subtotal.toFixed(2)}</p>
-                <p>Shipping: $${order.shipping.toFixed(2)}</p>
-                <p><strong>Total: $${order.total.toFixed(2)}</strong></p>
-            </div>
-        `;
+    if (!cartLink) return;
+
+    let totalItems = 0;
+
+    cart.forEach(item => {
+        totalItems += item.quantity;
     });
 
-    container.innerHTML = html;
+    cartLink.textContent = `🛒 View Your Cart (${totalItems})`;
 }
 
 // =========================

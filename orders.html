@@ -13,14 +13,12 @@
         <h1>My Orders</h1>
 
         <nav class="navbar">
-            <nav class="navbar">
-    <a href="index.html">Home</a>
-    <a href="about.html">About Us</a>
-    <a href="shop.html">Shop Our Soaps</a>
-    <a href="contact.html">Contact Us</a>
-    <a href="cart.html" id="cart-link">🛒 View Your Cart (0)</a>
-    <a href="orders.html">📦 My Orders</a>
-</nav>
+            <a href="index.html">Home</a>
+            <a href="about.html">About Us</a>
+            <a href="shop.html">Shop Our Soaps</a>
+            <a href="contact.html">Contact Us</a>
+            <a href="cart.html" id="cart-link">🛒 View Your Cart (0)</a>
+            <a href="orders.html">📦 My Orders</a>
         </nav>
     </header>
 
@@ -28,23 +26,25 @@
         <div id="orders-list"></div>
     </section>
 
-    <script src="cart.js"></script>
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Thomas Family Soaps. All rights reserved.</p>
+            <p class="footer-links">
+                <a href="legal.html#privacy-policy">Privacy Policy</a> |
+                <a href="legal.html#terms-conditions">Terms &amp; Conditions</a> |
+                <a href="legal.html#refund-policy">Refund Policy</a> |
+                <a href="legal.html#shipping-policy">Shipping Policy</a>
+            </p>
+        </div>
+    </footer>
+
+    <script src="cart.js?v=2"></script>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             displayOrders();
+            updateCartCount();
         });
     </script>
 
 </body>
 </html>
-    <footer class="footer">
-    <div class="container">
-        <p>&copy; 2026 Thomas Family Soaps. All rights reserved.</p>
-        <p class="footer-links">
-            <a href="legal.html#privacy-policy">Privacy Policy</a> |
-            <a href="legal.html#terms-conditions">Terms &amp; Conditions</a> |
-            <a href="legal.html#refund-policy">Refund Policy</a> |
-            <a href="legal.html#shipping-policy">Shipping Policy</a>
-        </p>
-    </div>
-</footer>

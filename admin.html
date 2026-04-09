@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Thomas Family Soaps</title>
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <header class="store-header">
+        <img src="tfs logo.png" alt="Thomas Family Soaps Logo" class="logo">
+        <h1>Thomas Family Soaps Admin</h1>
+
+        <nav class="navbar">
+            <a href="index.html">Home</a>
+            <a href="about.html">About Us</a>
+            <a href="shop.html">Shop Our Soaps</a>
+            <a href="contact.html">Contact Us</a>
+            <a href="cart.html" id="cart-link">🛒 View Your Cart (0)</a>
+            <a href="orders.html">📦 My Orders</a>
+        </nav>
+    </header>
+
+    <main class="admin-page">
+        <section class="admin-intro card">
+            <h2>Admin Dashboard</h2>
+            <p>
+                This page lets you manage inventory and view customer orders.
+            </p>
+            <p id="admin-status-message" class="admin-status-message">
+                Loading admin data...
+            </p>
+        </section>
+
+        <section class="card">
+            <div class="section-header">
+                <h2>Inventory</h2>
+                <button id="refresh-stock-btn" class="action-btn" type="button">Refresh Stock</button>
+            </div>
+            <div id="inventory-list" class="inventory-list"></div>
+        </section>
+
+        <section class="card">
+            <div class="section-header">
+                <h2>Orders</h2>
+                <button id="refresh-orders-btn" class="action-btn" type="button">Refresh Orders</button>
+            </div>
+            <div id="orders-list" class="orders-list"></div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <p>&copy; 2026 Thomas Family Soaps. All rights reserved.</p>
+    </footer>
+
+    <script src="cart.js?v=2"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
