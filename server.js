@@ -359,6 +359,10 @@ app.post("/checkout", async (req, res) => {
 // STRIPE WEBHOOK
 // Save order + update stock after successful payment
 // -------------------------
+// -------------------------
+// STRIPE WEBHOOK
+// Save order + update stock after successful payment
+// -------------------------
 app.post("/webhook", (req, res) => {
     const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
     let event;
@@ -392,15 +396,20 @@ app.post("/webhook", (req, res) => {
             const total = subtotal + shipping;
 
             const customerName =
-                session.customer_details?.name ||
                 session.shipping_details?.name ||
+                session.customer_details?.name ||
                 "Not provided";
 
             const customerEmail =
                 session.customer_details?.email ||
+                session.customer_email ||
                 "Not provided";
 
-            const shippingAddressObject = session.shipping_details?.address || {};
+            const shippingAddressObject =
+                session.shipping_details?.address ||
+                session.customer_details?.address ||
+                {};
+
             const shippingAddress = [
                 shippingAddressObject.line1,
                 shippingAddressObject.line2,
@@ -411,6 +420,9 @@ app.post("/webhook", (req, res) => {
             ]
                 .filter(Boolean)
                 .join(", ");
+
+            console.log("SESSION SHIPPING DETAILS:", session.shipping_details);
+            console.log("SESSION CUSTOMER DETAILS:", session.customer_details);
 
             const newOrder = {
                 orderNumber,
@@ -464,7 +476,6 @@ app.post("/webhook", (req, res) => {
 
     res.json({ received: true });
 });
-
 // -------------------------
 // START SERVER
 // -------------------------
