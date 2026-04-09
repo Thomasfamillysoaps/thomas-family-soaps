@@ -25,6 +25,19 @@ app.use("/webhook", express.raw({ type: "application/json" }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
+app.post("/admin-login", (req, res) => {
+    const { username, password } = req.body;
+
+    const ADMIN_USERNAME = "admin";
+    const ADMIN_PASSWORD = "hellyea2020!";
+
+    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+        return res.json({ success: true });
+    } else {
+        return res.json({ success: false, message: "Invalid login" });
+    }
+});
+
 // -------------------------
 // FILE HELPERS
 // -------------------------
