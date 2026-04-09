@@ -19,6 +19,13 @@ const ORDERS_FILE = path.join(__dirname, "orders.json");
 const ADMIN_USER = "admin";
 const ADMIN_PASS = "hellyea2020!";
 
+
+//updates cache everywhere
+app.use((req, res, next) => {
+    res.setHeader("Cache-Control", "no-store");
+    next();
+});
+
 // -------------------------
 // MIDDLEWARE
 // -------------------------
