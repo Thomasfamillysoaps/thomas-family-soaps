@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Just Peachy | Thomas Family Soaps</title>
+    <link rel="stylesheet" href="product-details.css" />
+</head>
+<body>
+
+    <header class="hero">
+        <div class="cart-icon">
+            <span class="cart-symbol">🛒</span>
+            <span class="cart-count">0</span>
+        </div>
+
+        <img src="tfs logo.png" alt="Thomas Family Soaps Logo" class="logo" />
+        <h1 class="site-title">Thomas Family Soaps</h1>
+        <p class="site-subtitle">Handcrafted homemade soaps made with love</p>
+
+        <nav class="navbar">
+            <a href="index.html">Home</a>
+            <a href="about.html">About Us</a>
+            <a href="shop.html">Shop Our Soaps</a>
+            <a href="contact.html">Contact Us</a>
+            <a href="cart.html">View Your Cart</a>
+            <a href="orders.html">My Orders</a>
+        </nav>
+    </header>
+
+    <main class="product-page">
+        <section class="product-detail-card">
+            <div class="product-image-wrap">
+                <img src="justpeachy.png" alt="Just Peachy Soap" class="product-image" />
+            </div>
+
+            <div class="product-info">
+                <h1>Just Peachy</h1>
+                <p class="product-price">$7.00</p>
+
+                <p class="product-description">
+                    A bright and juicy peach fragrance that smells like freshly sliced peaches on a warm summer day. Sweet, refreshing, and absolutely irresistible.
+                </p>
+
+                <div class="product-meta">
+                    <p><strong>Ingredients:</strong> Coconut Oil, Lard, Olive Oil, Castor Oil, Sodium Hydroxide (Lye), Fragrance, Mica</p>
+                    <p><strong>Handmade:</strong> Crafted in small batches with care</p>
+                    <p><strong>Perfect For:</strong> Anyone who loves sweet, fruity scents</p>
+                </div>
+
+                <div class="product-actions">
+                    <button class="add-btn" onclick="addToCart('Just Peachy', 7.00, 'justpeachy.png')">
+                        Add To Cart
+                    </button>
+
+                    <a href="shop.html" class="back-btn">Back to Shop</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>© 2026 Thomas Family Soaps. All rights reserved.</p>
+        <div class="policy-links">
+            <a href="privacy.html">Privacy Policy</a> |
+            <a href="terms.html">Terms &amp; Conditions</a> |
+            <a href="refund.html">Refund Policy</a> |
+            <a href="shipping.html">Shipping Policy</a>
+        </div>
+    </footer>
+
+    <script src="cart.js?v=2"></script>
+    <script>
+        function updateCartCount() {
+            let cart = JSON.parse(localStorage.getItem("cart")) || [];
+            let totalCount = 0;
+
+            cart.forEach(item => {
+                totalCount += item.quantity;
+            });
+
+            const cartCount = document.querySelector(".cart-count");
+            if (cartCount) {
+                cartCount.textContent = totalCount;
+            }
+        }
+
+        updateCartCount();
+    </script>
+</body>
+</html>

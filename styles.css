@@ -122,6 +122,12 @@ body {
     margin-top: 15px;
     color: #222;
 }
+.featured-card p {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    max-height: 40px;
+    overflow: hidden;/* keeps cards same height */
+}
 
 .featured-card p {
     font-size: 18px;
@@ -179,6 +185,21 @@ body {
 .sold-out {
     color: red;
     font-size: 18px;
+}
+
+.featured-card a {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.featured-card select {
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    font-size: 16px;
 }
 
 /* Footer */

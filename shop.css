@@ -333,6 +333,13 @@ body {
 .checkout-form button[type="submit"]:active {
     transform: scale(0.98);
 }
+
+.product-card a {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
 .footer-links {
     margin-top: 10px;
 }
