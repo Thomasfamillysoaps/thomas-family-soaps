@@ -25,6 +25,10 @@ app.use("/webhook", express.raw({ type: "application/json" }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
+// -------------------------
+// SIMPLE ADMIN LOGIN
+// TEMP VERSION ONLY
+// -------------------------
 app.post("/admin-login", (req, res) => {
     const { username, password } = req.body;
 
@@ -143,7 +147,6 @@ app.get("/api/stock", (req, res) => {
 // -------------------------
 // API ROUTE - GET ALL ORDERS
 // Customer-facing for now
-// Later we can lock this down / replace it
 // -------------------------
 app.get("/api/orders", (req, res) => {
     try {
@@ -182,7 +185,6 @@ app.get("/api/orders/:orderNumber", (req, res) => {
 
 // -------------------------
 // API ROUTE - GET ORDER BY STRIPE SESSION ID
-// Used for success page later
 // -------------------------
 app.get("/api/order/session/:sessionId", (req, res) => {
     try {
@@ -207,7 +209,6 @@ app.get("/api/order/session/:sessionId", (req, res) => {
 // -------------------------
 // ADMIN ROUTES
 // NOT SECURED YET
-// We secure these in next step
 // -------------------------
 app.get("/api/admin/orders", (req, res) => {
     try {
@@ -348,9 +349,9 @@ app.post("/checkout", async (req, res) => {
             line_items: lineItems,
             client_reference_id: orderNumber,
             metadata: {
-    orderNumber,
-    shipping: String(shipping)
-}
+                orderNumber,
+                shipping: String(shipping)
+            },
             success_url: `${BASE_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${BASE_URL}/cart`
         });
@@ -371,11 +372,7 @@ app.post("/checkout", async (req, res) => {
 // STRIPE WEBHOOK
 // Save order + update stock after successful payment
 // -------------------------
-// -------------------------
-// STRIPE WEBHOOK
-// Save order + update stock after successful payment
-// -------------------------
-app.post("/webhook", (req, res) => {
+app.post("/webhook", async (req, res) => {
     const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
     let event;
 
@@ -394,93 +391,105 @@ app.post("/webhook", (req, res) => {
         const session = event.data.object;
 
         try {
-            const cart = JSON.parse(session.metadata?.cart || "[]");
-            const shipping = Number(session.metadata?.shipping || 0);
             const orderNumber =
                 session.metadata?.orderNumber ||
                 session.client_reference_id ||
                 generateOrderNumber();
 
-            const subtotal = cart.reduce((total, item) => {
-                return total + (Number(item.price || 0) * Number(item.quantity || 0));
-            }, 0);
-
-            const total = subtotal + shipping;
-
-            const customerName =
-                session.shipping_details?.name ||
-                session.customer_details?.name ||
-                "Not provided";
-
-            const customerEmail =
-                session.customer_details?.email ||
-                session.customer_email ||
-                "Not provided";
-
-            const shippingAddressObject =
-                session.shipping_details?.address ||
-                session.customer_details?.address ||
-                {};
-
-            const shippingAddress = [
-                shippingAddressObject.line1,
-                shippingAddressObject.line2,
-                shippingAddressObject.city,
-                shippingAddressObject.state,
-                shippingAddressObject.postal_code,
-                shippingAddressObject.country
-            ]
-                .filter(Boolean)
-                .join(", ");
-
-            console.log("SESSION SHIPPING DETAILS:", session.shipping_details);
-            console.log("SESSION CUSTOMER DETAILS:", session.customer_details);
-
-            const newOrder = {
-                orderNumber,
-                stripeSessionId: session.id,
-                stripePaymentIntent: session.payment_intent || "",
-                items: cart,
-                subtotal,
-                shipping,
-                total,
-                status: "Paid",
-                date: new Date().toLocaleString(),
-                customerName,
-                customerEmail,
-                shippingMethod: shipping > 0 ? `Shipping - $${shipping.toFixed(2)}` : "Free",
-                shippingAddress,
-                street: shippingAddressObject.line1 || "",
-                city: shippingAddressObject.city || "",
-                state: shippingAddressObject.state || "",
-                zip: shippingAddressObject.postal_code || ""
-            };
+            const shipping = Number(session.metadata?.shipping || 0);
 
             const existingOrder = findOrderBySessionId(session.id);
 
             if (!existingOrder) {
+                const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
+                    limit: 100
+                });
+
+                const cart = lineItems.data
+                    .filter(item => item.description !== "Shipping")
+                    .map(item => ({
+                        name: item.description || "Soap Item",
+                        price: Number(item.amount_total || 0) / 100 / Number(item.quantity || 1),
+                        quantity: Number(item.quantity || 1)
+                    }));
+
+                const subtotal = cart.reduce((total, item) => {
+                    return total + (Number(item.price || 0) * Number(item.quantity || 0));
+                }, 0);
+
+                const total = subtotal + shipping;
+
+                const customerName =
+                    session.shipping_details?.name ||
+                    session.customer_details?.name ||
+                    "Not provided";
+
+                const customerEmail =
+                    session.customer_details?.email ||
+                    session.customer_email ||
+                    "Not provided";
+
+                const shippingAddressObject =
+                    session.shipping_details?.address ||
+                    session.customer_details?.address ||
+                    {};
+
+                const shippingAddress = [
+                    shippingAddressObject.line1,
+                    shippingAddressObject.line2,
+                    shippingAddressObject.city,
+                    shippingAddressObject.state,
+                    shippingAddressObject.postal_code,
+                    shippingAddressObject.country
+                ]
+                    .filter(Boolean)
+                    .join(", ");
+
+                console.log("SESSION SHIPPING DETAILS:", session.shipping_details);
+                console.log("SESSION CUSTOMER DETAILS:", session.customer_details);
+
+                const newOrder = {
+                    orderNumber,
+                    stripeSessionId: session.id,
+                    stripePaymentIntent: session.payment_intent || "",
+                    items: cart,
+                    subtotal,
+                    shipping,
+                    total,
+                    status: "Paid",
+                    date: new Date().toLocaleString(),
+                    customerName,
+                    customerEmail,
+                    shippingMethod: shipping > 0 ? `Shipping - $${shipping.toFixed(2)}` : "Free",
+                    shippingAddress,
+                    street: shippingAddressObject.line1 || "",
+                    city: shippingAddressObject.city || "",
+                    state: shippingAddressObject.state || "",
+                    zip: shippingAddressObject.postal_code || ""
+                };
+
                 const orders = readOrders();
                 orders.unshift(newOrder);
                 saveOrders(orders);
                 console.log(`✅ Order saved: ${orderNumber}`);
+
+                const stock = readStock();
+
+                cart.forEach(item => {
+                    if (stock[item.name] !== undefined) {
+                        stock[item.name] -= item.quantity;
+
+                        if (stock[item.name] < 0) {
+                            stock[item.name] = 0;
+                        }
+                    }
+                });
+
+                saveStock(stock);
+                console.log("✅ Stock updated after successful payment.");
             } else {
                 console.log(`ℹ️ Order already exists for session ${session.id}`);
             }
-
-            const stock = readStock();
-
-            cart.forEach(item => {
-                if (stock[item.name] !== undefined) {
-                    stock[item.name] -= item.quantity;
-
-                    if (stock[item.name] < 0) {
-                        stock[item.name] = 0;
-                    }
-                }
-            });
-
-            saveStock(stock);
-            console.log("✅ Stock updated after successful payment.");
         } catch (error) {
             console.error("WEBHOOK ORDER/STOCK ERROR:", error);
         }
@@ -488,6 +497,7 @@ app.post("/webhook", (req, res) => {
 
     res.json({ received: true });
 });
+
 // -------------------------
 // START SERVER
 // -------------------------
