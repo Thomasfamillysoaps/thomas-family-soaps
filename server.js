@@ -335,10 +335,9 @@ app.post("/checkout", async (req, res) => {
             line_items: lineItems,
             client_reference_id: orderNumber,
             metadata: {
-                orderNumber,
-                cart: JSON.stringify(cart),
-                shipping: String(shipping)
-            },
+    orderNumber,
+    shipping: String(shipping)
+}
             success_url: `${BASE_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${BASE_URL}/cart`
         });
