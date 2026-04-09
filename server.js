@@ -22,7 +22,9 @@ const ADMIN_PASS = "hellyea2020!";
 
 //updates cache everywhere
 app.use((req, res, next) => {
-    res.setHeader("Cache-Control", "no-store");
+    if (req.url.startsWith("/cart.js")) {
+        req.url = "/cart.js";
+    }
     next();
 });
 
@@ -219,19 +221,6 @@ app.get("/api/orders", requireAdmin, (req, res) => {
 // API ROUTE - GET ONE ORDER BY ORDER NUMBER
 // -------------------------
 
-async function lookupOrder() {
-    const orderNumber = document.getElementById("order-number")?.value.trim();
-    const email = document.getElementById("order-email")?.value.trim();
-
-    const messageBox = document.getElementById("order-lookup-message");
-    const resultsBox = document.getElementById("order-results");
-
-    if (messageBox) messageBox.innerHTML = "";
-    if (resultsBox) resultsBox.innerHTML = "";
-
-    if (!orderNumber || !email) {
-        messageBox.innerHTML = `<p style="color:red;">Please enter both your order number and email.</p>`;
-        return;
     }
 
     try {
@@ -300,7 +289,7 @@ app.post("/lookup-order", (req, res) => {
 
         const foundOrder = orders.find(order => {
             const savedOrderNumber = (order.orderNumber || "").trim().toLowerCase();
-            const savedEmail = (order.customerEmail || "").trim().toLowerCase();
+            const savedEmail = (order.customerEmail || order.email || "").trim().toLowerCase();
 
             return savedOrderNumber === cleanOrderNumber && savedEmail === cleanEmail;
         });

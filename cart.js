@@ -587,20 +587,22 @@ function updateCartCount() {
 // TEMP VERSION - ORDER NUMBER ONLY
 // =========================
 
+// =========================
+// ORDER LOOKUP PAGE
+// =========================
 async function lookupOrder() {
     const orderNumber = document.getElementById("order-number")?.value.trim();
     const email = document.getElementById("order-email")?.value.trim();
-    const resultBox = document.getElementById("order-result");
 
-    if (resultBox) {
-        resultBox.innerHTML = "";
-    }
+    const messageBox = document.getElementById("order-lookup-message");
+    const resultsBox = document.getElementById("order-results");
+
+    if (messageBox) messageBox.innerHTML = "";
+    if (resultsBox) resultsBox.innerHTML = "";
 
     if (!orderNumber || !email) {
-        if (resultBox) {
-            resultBox.innerHTML = `<p style="color:red;">Please enter both your order number and email.</p>`;
-        } else {
-            alert("Please enter both your order number and email.");
+        if (messageBox) {
+            messageBox.innerHTML = `<p style="color:red;">Please enter both your order number and email.</p>`;
         }
         return;
     }
@@ -617,26 +619,56 @@ async function lookupOrder() {
         const data = await res.json();
 
         if (!res.ok) {
-            if (resultBox) {
-                resultBox.innerHTML = `<p style="color:red;">Order not found. Check your info.</p>`;
-            } else {
-                alert("Order not found. Check your info.");
+            if (messageBox) {
+                messageBox.innerHTML = `<p style="color:red;">${data.error || "Order not found. Check your info."}</p>`;
             }
             return;
         }
 
-        displayOrder(data);
+        renderLookupOrder(data);
     } catch (error) {
         console.error("ORDER LOOKUP ERROR:", error);
 
-        if (resultBox) {
-            resultBox.innerHTML = `<p style="color:red;">Something went wrong while looking up your order.</p>`;
-        } else {
-            alert("Something went wrong while looking up your order.");
+        if (messageBox) {
+            messageBox.innerHTML = `<p style="color:red;">Something went wrong while looking up your order.</p>`;
         }
     }
 }
 
+function renderLookupOrder(order) {
+    const resultsBox = document.getElementById("order-results");
+    if (!resultsBox) return;
+
+    let itemsHtml = "";
+
+    (order.items || []).forEach(item => {
+        const itemTotal = Number(item.price || 0) * Number(item.quantity || 0);
+
+        itemsHtml += `
+            <p>${item.name} × ${item.quantity} — $${itemTotal.toFixed(2)}</p>
+        `;
+    });
+
+    resultsBox.innerHTML = `
+        <div class="order-summary">
+            <h3>Order ${order.orderNumber || ""}</h3>
+            <p>${order.date || ""}</p>
+            <p>Status: ${order.status || "Paid"}</p>
+            <p><strong>Name:</strong> ${order.customerName || "Not provided"}</p>
+            <p><strong>Email:</strong> ${order.customerEmail || "Not provided"}</p>
+            <p><strong>Shipping Address:</strong> ${order.shippingAddress || "Not provided"}</p>
+
+            <div class="order-items-list">
+                <h4>Items Ordered:</h4>
+                ${itemsHtml}
+            </div>
+
+            <p>Subtotal: $${Number(order.subtotal || 0).toFixed(2)}</p>
+            <p>Shipping: $${Number(order.shipping || 0).toFixed(2)}</p>
+            <p><strong>Total: $${Number(order.total || 0).toFixed(2)}</strong></p>
+        </div>
+    `;
+}
 // =========================
 // PAGE LOAD
 // =========================
