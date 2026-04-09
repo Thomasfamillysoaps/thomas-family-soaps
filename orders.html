@@ -35,20 +35,18 @@
                 placeholder="Enter order number (example: TFS-1234567890)"
                 style="width: 100%; max-width: 420px; padding: 12px; font-size: 16px; border-radius: 10px; border: 1px solid #ccc; margin-bottom: 15px;"
             >
-
             <br>
-
             <button
                 type="button"
                 class="continue-btn"
-                onclick="lookupOrder()"
+                id="lookup-order-btn"
             >
                 Find My Order
             </button>
         </div>
 
         <p id="lookup-order-number" class="order-number"></p>
-        <div id="lookup-order-result" class="order-summary"></div>
+        <div id="lookup-order-result" class="order-summary" style="display:none;"></div>
     </section>
 
     <footer class="footer">
@@ -63,12 +61,25 @@
         </div>
     </footer>
 
-    <script src="cart.js?v=3"></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            updateCartCount();
-        });
-    </script>
+<section class="order-lookup-section">
+    <h2>Find Your Order</h2>
+    <p>Enter your order number below to view your order.</p>
+
+    <div class="lookup-form">
+        <input
+            type="text"
+            id="order-number"
+            placeholder="Enter your order number"
+        >
+
+        <button type="button" id="find-order-btn">Find My Order</button>
+    </div>
+
+    <div id="order-lookup-message"></div>
+    <div id="order-results"></div>
+</section>
+
+<script src="cart.js?v=3"></script>
 
 </body>
 </html>
