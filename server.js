@@ -281,6 +281,45 @@ app.get("/api/order/session/:sessionId", (req, res) => {
     }
 });
 
+// order found system for order look up page
+
+app.post("/lookup-order", (req, res) => {
+    try {
+        const { orderNumber, email } = req.body;
+
+        if (!orderNumber || !email) {
+            return res.status(400).json({
+                error: "Order number and email are required."
+            });
+        }
+
+        const orders = readOrders();
+
+        const cleanOrderNumber = orderNumber.trim().toLowerCase();
+        const cleanEmail = email.trim().toLowerCase();
+
+        const foundOrder = orders.find(order => {
+            const savedOrderNumber = (order.orderNumber || "").trim().toLowerCase();
+            const savedEmail = (order.customerEmail || "").trim().toLowerCase();
+
+            return savedOrderNumber === cleanOrderNumber && savedEmail === cleanEmail;
+        });
+
+        if (!foundOrder) {
+            return res.status(404).json({
+                error: "Order not found."
+            });
+        }
+
+        res.json(foundOrder);
+    } catch (error) {
+        console.error("PRIVATE ORDER LOOKUP ERROR:", error);
+        res.status(500).json({
+            error: "Failed to look up order."
+        });
+    }
+});
+
 // -------------------------
 // ADMIN ROUTES
 // NOW PROTECTED
