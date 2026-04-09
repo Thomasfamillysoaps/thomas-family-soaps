@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Orders | Thomas Family Soaps</title>
+    <title>Find My Order | Thomas Family Soaps</title>
     <link rel="stylesheet" href="success.css">
 </head>
 <body>
 
     <header class="store-header">
         <img src="tfs logo.png" alt="Thomas Family Soaps Logo" class="logo">
-        <h1>My Orders</h1>
+        <h1>Find My Order</h1>
 
         <nav class="navbar">
             <a href="index.html">Home</a>
@@ -18,12 +18,37 @@
             <a href="shop.html">Shop Our Soaps</a>
             <a href="contact.html">Contact Us</a>
             <a href="cart.html" id="cart-link">🛒 View Your Cart (0)</a>
-            <a href="orders.html">📦 My Orders</a>
+            <a href="orders.html">📦 Find My Order</a>
         </nav>
     </header>
 
     <section class="success-container">
-        <div id="orders-list"></div>
+        <h2>Look Up Your Order</h2>
+        <p class="success-message">
+            Enter your full order number below to view your order details.
+        </p>
+
+        <div class="order-summary">
+            <input
+                type="text"
+                id="order-lookup-input"
+                placeholder="Enter order number (example: TFS-1234567890)"
+                style="width: 100%; max-width: 420px; padding: 12px; font-size: 16px; border-radius: 10px; border: 1px solid #ccc; margin-bottom: 15px;"
+            >
+
+            <br>
+
+            <button
+                type="button"
+                class="continue-btn"
+                onclick="lookupOrder()"
+            >
+                Find My Order
+            </button>
+        </div>
+
+        <p id="lookup-order-number" class="order-number"></p>
+        <div id="lookup-order-result" class="order-summary"></div>
     </section>
 
     <footer class="footer">
@@ -41,7 +66,6 @@
     <script src="cart.js?v=2"></script>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            displayOrders();
             updateCartCount();
         });
     </script>
