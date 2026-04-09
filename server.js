@@ -196,7 +196,7 @@ app.get("/api/stock", (req, res) => {
 // API ROUTE - GET ALL ORDERS
 // Customer-facing for now
 // -------------------------
-app.get("/api/orders", (req, res) => {
+app.get("/api/orders", requireAdmin, (req, res) => {
     try {
         const orders = readOrders();
         res.json(orders);
