@@ -221,31 +221,7 @@ app.get("/api/orders", requireAdmin, (req, res) => {
 // API ROUTE - GET ONE ORDER BY ORDER NUMBER
 // -------------------------
 
-    }
-
-    try {
-        const res = await fetch("/lookup-order", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ orderNumber, email })
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-            messageBox.innerHTML = `<p style="color:red;">Order not found. Check your info.</p>`;
-            return;
-        }
-
-        displayOrder(data);
-
-    } catch (error) {
-        console.error("LOOKUP ERROR:", error);
-        messageBox.innerHTML = `<p style="color:red;">Something went wrong. Try again.</p>`;
-    }
-}
+   
 
 // -------------------------
 // API ROUTE - GET ORDER BY STRIPE SESSION ID
