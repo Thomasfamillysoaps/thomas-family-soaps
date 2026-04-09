@@ -505,6 +505,9 @@ async function loadOrderFromSession() {
 // =========================
 // ORDERS PAGE
 // =========================
+// =========================
+// ORDERS PAGE
+// =========================
 async function displayOrders() {
     let container = document.getElementById("orders-list");
 

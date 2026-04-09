@@ -109,6 +109,62 @@ body {
     margin-top: 15px;
     margin-bottom: 20px;
 }
+
+/* ========================= */
+/* ORDER LOOKUP PAGE */
+/* ========================= */
+
+.order-summary input {
+    outline: none;
+    transition: 0.2s ease;
+}
+
+.order-summary input:focus {
+    border: 2px solid #d62828;
+    box-shadow: 0 0 6px rgba(214, 40, 40, 0.3);
+}
+
+/* Lookup result box */
+#lookup-order-result {
+    margin-top: 20px;
+    text-align: left;
+}
+
+/* Order result headings */
+#lookup-order-result h3 {
+    color: #d62828;
+    margin-bottom: 10px;
+}
+
+/* Order items list */
+.order-items-list {
+    margin-top: 10px;
+    margin-bottom: 15px;
+}
+
+/* Each item row */
+.order-items-list p {
+    margin: 4px 0;
+    font-size: 16px;
+}
+
+/* Divider line */
+.order-summary hr {
+    border: none;
+    border-top: 1px solid #f0d0d0;
+    margin: 15px 0;
+}
+
+/* Error / empty messages */
+#lookup-order-result p {
+    font-size: 16px;
+    color: #444;
+}
+
+/* Button spacing fix */
+.order-summary .continue-btn {
+    margin-top: 10px;
+}
 .footer-links {
     margin-top: 10px;
 }
