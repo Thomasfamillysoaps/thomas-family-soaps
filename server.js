@@ -5,6 +5,7 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const cors = require("cors");
 const path = require("path");
 const fs = require("fs");
+const session = require("express-session");
 
 const app = express();
 const PORT = process.env.PORT || 4242;
@@ -23,6 +24,17 @@ const ADMIN_PASS = "hellyea2020!";
 // -------------------------
 app.use(cors());
 
+app.use(session({
+    secret: process.env.SESSION_SECRET || "tfs-secret-key",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: false,
+        httpOnly: true,
+        maxAge: 1000 * 60 * 60 * 2 // 2 hours
+    }
+}));
+
 // IMPORTANT: Stripe webhook must use raw body
 app.use("/webhook", express.raw({ type: "application/json" }));
 
@@ -31,19 +43,47 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
 // -------------------------
-// SIMPLE ADMIN LOGIN ROUTE
+// ADMIN SESSION GUARD
+// -------------------------
+function requireAdmin(req, res, next) {
+    if (req.session && req.session.isAdmin) {
+        return next();
+    }
+
+    return res.status(401).json({
+        error: "Unauthorized"
+    });
+}
+
+// -------------------------
+// SIMPLE ADMIN LOGIN ROUTES
 // -------------------------
 app.post("/admin-login", (req, res) => {
     const { username, password } = req.body;
 
     if (username === ADMIN_USER && password === ADMIN_PASS) {
+        req.session.isAdmin = true;
         return res.json({ success: true });
-    } else {
-        return res.status(401).json({
-            success: false,
-            message: "Invalid login"
-        });
     }
+
+    return res.status(401).json({
+        success: false,
+        message: "Invalid login"
+    });
+});
+
+app.post("/admin-logout", (req, res) => {
+    req.session.destroy(() => {
+        res.json({ success: true });
+    });
+});
+
+app.get("/api/admin/check", (req, res) => {
+    if (req.session && req.session.isAdmin) {
+        return res.json({ loggedIn: true });
+    }
+
+    return res.status(401).json({ loggedIn: false });
 });
 
 // -------------------------
@@ -129,13 +169,10 @@ app.get("/orders", (req, res) => {
     res.sendFile(path.join(__dirname, "orders.html"));
 });
 
-// IMPORTANT:
-// Going to /admin should send people to the login page first
 app.get("/admin", (req, res) => {
     res.redirect("/admin-login.html");
 });
 
-// Optional direct route if you visit /admin-login
 app.get("/admin-login", (req, res) => {
     res.sendFile(path.join(__dirname, "admin-login.html"));
 });
@@ -219,10 +256,9 @@ app.get("/api/order/session/:sessionId", (req, res) => {
 
 // -------------------------
 // ADMIN ROUTES
-// TEMP VERSION ONLY
-// Frontend admin.js still guards access too
+// NOW PROTECTED
 // -------------------------
-app.get("/api/admin/orders", (req, res) => {
+app.get("/api/admin/orders", requireAdmin, (req, res) => {
     try {
         const orders = readOrders();
         res.json(orders);
@@ -234,7 +270,19 @@ app.get("/api/admin/orders", (req, res) => {
     }
 });
 
-app.post("/api/admin/update-stock", (req, res) => {
+app.get("/api/admin/stock", requireAdmin, (req, res) => {
+    try {
+        const stock = readStock();
+        res.json(stock);
+    } catch (error) {
+        console.error("ADMIN STOCK READ ERROR:", error);
+        res.status(500).json({
+            error: "Failed to read admin stock."
+        });
+    }
+});
+
+app.post("/api/admin/update-stock", requireAdmin, (req, res) => {
     try {
         const { productName, stock } = req.body;
 
@@ -261,7 +309,7 @@ app.post("/api/admin/update-stock", (req, res) => {
     }
 });
 
-app.post("/api/admin/delete-order", (req, res) => {
+app.post("/api/admin/delete-order", requireAdmin, (req, res) => {
     try {
         const { orderNumber } = req.body;
 
@@ -409,7 +457,6 @@ app.post("/webhook", async (req, res) => {
                 generateOrderNumber();
 
             const shipping = Number(session.metadata?.shipping || 0);
-
             const existingOrder = findOrderBySessionId(session.id);
 
             if (!existingOrder) {
