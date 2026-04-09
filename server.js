@@ -13,6 +13,11 @@ const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 const STOCK_FILE = path.join(__dirname, "stock.json");
 const ORDERS_FILE = path.join(__dirname, "orders.json");
 
+// SIMPLE ADMIN LOGIN
+// CHANGE THESE LATER
+const ADMIN_USER = "admin";
+const ADMIN_PASS = "hellyea2020!";
+
 // -------------------------
 // MIDDLEWARE
 // -------------------------
@@ -26,19 +31,18 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
 // -------------------------
-// SIMPLE ADMIN LOGIN
-// TEMP VERSION ONLY
+// SIMPLE ADMIN LOGIN ROUTE
 // -------------------------
 app.post("/admin-login", (req, res) => {
     const { username, password } = req.body;
 
-    const ADMIN_USERNAME = "admin";
-    const ADMIN_PASSWORD = "hellyea2020!";
-
-    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+    if (username === ADMIN_USER && password === ADMIN_PASS) {
         return res.json({ success: true });
     } else {
-        return res.json({ success: false, message: "Invalid login" });
+        return res.status(401).json({
+            success: false,
+            message: "Invalid login"
+        });
     }
 });
 
@@ -125,8 +129,15 @@ app.get("/orders", (req, res) => {
     res.sendFile(path.join(__dirname, "orders.html"));
 });
 
+// IMPORTANT:
+// Going to /admin should send people to the login page first
 app.get("/admin", (req, res) => {
-    res.sendFile(path.join(__dirname, "admin.html"));
+    res.redirect("/admin-login.html");
+});
+
+// Optional direct route if you visit /admin-login
+app.get("/admin-login", (req, res) => {
+    res.sendFile(path.join(__dirname, "admin-login.html"));
 });
 
 // -------------------------
@@ -208,7 +219,8 @@ app.get("/api/order/session/:sessionId", (req, res) => {
 
 // -------------------------
 // ADMIN ROUTES
-// NOT SECURED YET
+// TEMP VERSION ONLY
+// Frontend admin.js still guards access too
 // -------------------------
 app.get("/api/admin/orders", (req, res) => {
     try {

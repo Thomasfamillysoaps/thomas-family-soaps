@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login | Thomas Family Soaps</title>
+    <link rel="stylesheet" href="admin-login.css">
+</head>
+<body>
+
+    <div class="login-wrapper">
+        <div class="login-card">
+            <h1>Admin Login</h1>
+            <p class="login-subtext">Authorized access only.</p>
+
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+
+            <button id="login-btn">Log In</button>
+
+            <p id="error-message"></p>
+        </div>
+    </div>
+
+    <script>
+        async function login() {
+            const username = document.getElementById("username").value.trim();
+            const password = document.getElementById("password").value.trim();
+            const errorMessage = document.getElementById("error-message");
+
+            errorMessage.textContent = "";
+
+            try {
+                const response = await fetch("/admin-login", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    localStorage.setItem("adminAuth", "true");
+                    window.location.href = "/admin.html";
+                } else {
+                    errorMessage.textContent = "Wrong username or password.";
+                }
+            } catch (error) {
+                errorMessage.textContent = "Login failed. Try again.";
+                console.error("LOGIN ERROR:", error);
+            }
+        }
+
+        document.getElementById("login-btn").addEventListener("click", login);
+
+        document.getElementById("password").addEventListener("keypress", function(e) {
+            if (e.key === "Enter") {
+                login();
+            }
+        });
+
+        document.getElementById("username").addEventListener("keypress", function(e) {
+            if (e.key === "Enter") {
+                login();
+            }
+        });
+    </script>
+
+</body>
+</html>
