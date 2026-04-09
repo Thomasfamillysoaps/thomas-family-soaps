@@ -3,6 +3,13 @@
 // SERVER-BASED VERSION
 // =========================
 
+// -------------------------
+// SIMPLE ADMIN PAGE GUARD
+// -------------------------
+if (localStorage.getItem("adminAuth") !== "true") {
+    window.location.href = "/admin-login.html";
+}
+
 const inventoryList = document.getElementById("inventory-list");
 const ordersList = document.getElementById("orders-list");
 const adminStatusMessage = document.getElementById("admin-status-message");
@@ -36,6 +43,44 @@ function escapeHtml(text) {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+}
+
+function slugify(text) {
+    return String(text)
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^a-z0-9-]/g, "");
+}
+
+function escapeSingleQuotes(text) {
+    return String(text || "").replace(/'/g, "\\'");
+}
+
+function formatShippingAddress(order) {
+    if (order.shippingAddress) {
+        return order.shippingAddress;
+    }
+
+    const parts = [
+        order.street,
+        order.city,
+        order.state,
+        order.zip
+    ].filter(Boolean);
+
+    if (parts.length === 0) {
+        return "Not provided";
+    }
+
+    return parts.join(", ");
+}
+
+// -------------------------
+// LOGOUT
+// -------------------------
+function logout() {
+    localStorage.removeItem("adminAuth");
+    window.location.href = "/admin-login.html";
 }
 
 // -------------------------
@@ -235,39 +280,6 @@ async function deleteOrder(orderNumber) {
         console.error("DELETE ORDER ERROR:", error);
         setStatus(error.message || "Could not delete order.", "error");
     }
-}
-
-// -------------------------
-// FORMAT HELPERS
-// -------------------------
-function slugify(text) {
-    return String(text)
-        .toLowerCase()
-        .replace(/\s+/g, "-")
-        .replace(/[^a-z0-9-]/g, "");
-}
-
-function escapeSingleQuotes(text) {
-    return String(text || "").replace(/'/g, "\\'");
-}
-
-function formatShippingAddress(order) {
-    if (order.shippingAddress) {
-        return order.shippingAddress;
-    }
-
-    const parts = [
-        order.street,
-        order.city,
-        order.state,
-        order.zip
-    ].filter(Boolean);
-
-    if (parts.length === 0) {
-        return "Not provided";
-    }
-
-    return parts.join(", ");
 }
 
 // -------------------------
