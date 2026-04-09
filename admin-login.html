@@ -4,67 +4,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login | Thomas Family Soaps</title>
-    <link rel="stylesheet" href="admin-login.css">
+    <link rel="stylesheet" href="admin.css">
 </head>
 <body>
 
-    <div class="login-wrapper">
-        <div class="login-card">
-            <h1>Admin Login</h1>
-            <p class="login-subtext">Authorized access only.</p>
+    <header class="store-header">
+        <img src="tfs logo.png" alt="Thomas Family Soaps Logo" class="logo">
+        <h1>Admin Login</h1>
 
-            <input type="text" id="username" placeholder="Username">
-            <input type="password" id="password" placeholder="Password">
+        <nav class="navbar">
+            <a href="index.html">Home</a>
+            <a href="about.html">About Us</a>
+            <a href="shop.html">Shop Our Soaps</a>
+            <a href="contact.html">Contact Us</a>
+            <a href="cart.html" id="cart-link">🛒 View Your Cart (0)</a>
+        </nav>
+    </header>
 
-            <button id="login-btn">Log In</button>
+    <main class="admin-page">
+        <section class="admin-card">
+            <h2>Owner Access Only</h2>
+            <p class="admin-subtext">Log in to manage orders and inventory.</p>
 
-            <p id="error-message"></p>
-        </div>
-    </div>
+            <form id="admin-login-form" class="admin-login-form">
+                <label for="admin-username">Username</label>
+                <input type="text" id="admin-username" name="username" required>
 
+                <label for="admin-password">Password</label>
+                <input type="password" id="admin-password" name="password" required>
+
+                <button type="submit" class="save-btn">Log In</button>
+            </form>
+
+            <p id="login-message" class="admin-status-message"></p>
+        </section>
+    </main>
+
+    <script src="cart.js?v=3"></script>
+    <script src="admin-login.js?v=2"></script>
     <script>
-        async function login() {
-            const username = document.getElementById("username").value.trim();
-            const password = document.getElementById("password").value.trim();
-            const errorMessage = document.getElementById("error-message");
-
-            errorMessage.textContent = "";
-
-            try {
-                const response = await fetch("/admin-login", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ username, password })
-                });
-
-                const data = await response.json();
-
-                if (response.ok && data.success) {
-                    localStorage.setItem("adminAuth", "true");
-                    window.location.href = "/admin.html";
-                } else {
-                    errorMessage.textContent = "Wrong username or password.";
-                }
-            } catch (error) {
-                errorMessage.textContent = "Login failed. Try again.";
-                console.error("LOGIN ERROR:", error);
-            }
-        }
-
-        document.getElementById("login-btn").addEventListener("click", login);
-
-        document.getElementById("password").addEventListener("keypress", function(e) {
-            if (e.key === "Enter") {
-                login();
-            }
-        });
-
-        document.getElementById("username").addEventListener("keypress", function(e) {
-            if (e.key === "Enter") {
-                login();
-            }
+        document.addEventListener("DOMContentLoaded", () => {
+            updateCartCount();
         });
     </script>
 
