@@ -376,10 +376,27 @@ app.post("/api/admin/delete-order", requireAdmin, (req, res) => {
 // -------------------------
 // CHECKOUT
 // -------------------------
+function calculateShipping(cart) {
+    let totalQuantity = 0;
+
+    cart.forEach(item => {
+        totalQuantity += Number(item.quantity || 0);
+    });
+
+    if (totalQuantity === 0) {
+        return 0;
+    } else if (totalQuantity <= 2) {
+        return 5.95;
+    } else if (totalQuantity <= 5) {
+        return 8.95;
+    } else {
+        return 12.95;
+    }
+}
 app.post("/checkout", async (req, res) => {
     try {
         const cart = req.body.cart || [];
-        const shipping = Number(req.body.shipping || 0);
+        const shipping = calculateShipping(cart);
         const orderNumber = req.body.orderNumber || generateOrderNumber();
 
         if (cart.length === 0) {
