@@ -80,17 +80,20 @@ body {
     gap: 18px;
 }
 
-.inventory-item,
-.order-card {
+/* =========================
+   INVENTORY
+========================= */
+
+.inventory-item {
     background-color: #fff9f9;
     border: 1px solid #f1d7d7;
     border-radius: 14px;
     padding: 18px;
 }
 
-.inventory-item h3,
-.order-card h3 {
+.inventory-item h3 {
     margin-top: 0;
+    margin-bottom: 10px;
     color: #8b0000;
 }
 
@@ -118,12 +121,16 @@ body {
     font-size: 1rem;
 }
 
+/* =========================
+   BUTTONS
+========================= */
+
 .action-btn,
 .save-btn,
 .delete-btn {
     background-color: #b22222;
     color: white;
-    border: none;
+    border: 2px solid #b22222;
     border-radius: 10px;
     padding: 10px 16px;
     font-weight: bold;
@@ -136,24 +143,109 @@ body {
 .delete-btn:hover {
     background-color: white;
     color: #b22222;
-    border: 2px solid #b22222;
 }
 
 .delete-btn {
-    margin-top: 12px;
+    margin-top: 14px;
+}
+
+/* =========================
+   ORDERS
+========================= */
+
+.order-card {
+    background: #fff9f9;
+    border: 1px solid #f1d7d7;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    display: grid;
+    gap: 14px;
+}
+
+.order-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 15px;
+    flex-wrap: wrap;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #edd4d4;
+}
+
+.order-card-top h3 {
+    margin: 0;
+    color: #8b0000;
+    font-size: 1.2rem;
+}
+
+.order-status {
+    display: inline-block;
+    background: #ffe3e3;
+    color: #8b0000;
+    font-weight: bold;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-size: 0.95rem;
+    border: 1px solid #efb6b6;
+    white-space: nowrap;
+}
+
+.order-meta {
+    display: grid;
+    gap: 8px;
 }
 
 .order-meta p,
-.order-items p {
-    margin: 6px 0;
+.order-items p,
+.order-totals p {
+    margin: 0;
     line-height: 1.5;
 }
 
-.order-items {
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid #edd4d4;
+.order-meta strong,
+.order-items strong,
+.order-totals strong {
+    color: #8b0000;
 }
+
+.order-items,
+.order-totals {
+    background: #ffffff;
+    border: 1px solid #f3dddd;
+    border-radius: 12px;
+    padding: 14px 16px;
+}
+
+.order-items {
+    display: grid;
+    gap: 8px;
+}
+
+.order-items p:first-child,
+.order-totals p:first-child {
+    margin-top: 0;
+}
+
+.order-totals {
+    display: grid;
+    gap: 8px;
+    background: #fff4f4;
+}
+
+.order-totals p:last-child {
+    font-size: 1.05rem;
+}
+
+.order-card hr {
+    border: none;
+    border-top: 1px solid #edd4d4;
+    margin: 0;
+}
+
+/* =========================
+   TEXT STATES
+========================= */
 
 .empty-message {
     color: #777;
@@ -170,6 +262,10 @@ body {
     font-weight: bold;
 }
 
+/* =========================
+   FOOTER
+========================= */
+
 .site-footer {
     background-color: #b22222;
     color: white;
@@ -178,21 +274,9 @@ body {
     margin-top: 40px;
 }
 
-@media (max-width: 768px) {
-    .inventory-row {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .stock-edit-group {
-        width: 100%;
-    }
-
-    .stock-edit-group input {
-        width: 100%;
-        max-width: 200px;
-    }
-}
+/* =========================
+   FLOATING MENU
+========================= */
 
 .floating-menu-wrapper {
     position: fixed;
@@ -249,4 +333,46 @@ body {
 
 .dropdown-menu.show {
     display: block;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 768px) {
+    .admin-page {
+        margin: 25px auto;
+        padding: 0 14px;
+    }
+
+    .card {
+        padding: 18px;
+    }
+
+    .inventory-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .stock-edit-group {
+        width: 100%;
+    }
+
+    .stock-edit-group input {
+        width: 100%;
+        max-width: 200px;
+    }
+
+    .order-card {
+        padding: 16px;
+    }
+
+    .order-card-top {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .order-status {
+        white-space: normal;
+    }
 }

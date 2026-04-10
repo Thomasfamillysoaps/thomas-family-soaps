@@ -248,7 +248,7 @@ function renderOrders(orders) {
 
         const itemsHtml = items.map(item => `
             <p>
-                ${escapeHtml(item.name)} × ${Number(item.quantity || 0)}
+                🧼 ${escapeHtml(item.name)} — Qty: ${Number(item.quantity || 0)}
                 — ${formatMoney(Number(item.price || 0) * Number(item.quantity || 0))}
             </p>
         `).join("");
@@ -257,23 +257,28 @@ function renderOrders(orders) {
 
         return `
             <div class="order-card">
-                <h3>Order #${escapeHtml(order.orderNumber || "N/A")}</h3>
+                <div class="order-card-top">
+                    <h3>Order #${escapeHtml(order.orderNumber || "N/A")}</h3>
+                    <p class="order-status"><strong>Status:</strong> ${escapeHtml(order.status || "Paid")}</p>
+                </div>
 
                 <div class="order-meta">
-                    <p><strong>Status:</strong> ${escapeHtml(order.status || "Paid")}</p>
                     <p><strong>Date:</strong> ${escapeHtml(order.date || "Not provided")}</p>
                     <p><strong>Name:</strong> ${escapeHtml(order.customerName || "Not provided")}</p>
                     <p><strong>Email:</strong> ${escapeHtml(order.customerEmail || "Not provided")}</p>
                     <p><strong>Shipping Method:</strong> ${escapeHtml(order.shippingMethod || "Not provided")}</p>
                     <p><strong>Address:</strong> ${escapeHtml(shippingAddress)}</p>
-                    <p><strong>Subtotal:</strong> ${formatMoney(order.subtotal)}</p>
-                    <p><strong>Shipping:</strong> ${formatMoney(order.shipping)}</p>
-                    <p><strong>Total:</strong> ${formatMoney(order.total)}</p>
                 </div>
 
                 <div class="order-items">
                     <h4>Items Ordered</h4>
                     ${itemsHtml || "<p>No items found.</p>"}
+                </div>
+
+                <div class="order-totals">
+                    <p><strong>Subtotal:</strong> ${formatMoney(order.subtotal)}</p>
+                    <p><strong>Shipping:</strong> ${formatMoney(order.shipping)}</p>
+                    <p><strong>Total:</strong> ${formatMoney(order.total)}</p>
                 </div>
 
                 <button
