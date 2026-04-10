@@ -52,20 +52,21 @@ function escapeSingleQuotes(text) {
 }
 
 function formatShippingAddress(order) {
-    if (order.shippingAddress) {
-        return order.shippingAddress;
+    if (order.shipping_address) {
+        return order.shipping_address;
     }
 
     const parts = [
         order.street,
+        order.line2,
         order.city,
         order.state,
-        order.zip
+        order.zip,
+        order.country
     ].filter(Boolean);
 
     return parts.length ? parts.join(", ") : "Not provided";
 }
-
 // -------------------------
 // SERVER AUTH CHECK
 // -------------------------
@@ -218,7 +219,8 @@ async function loadOrders() {
     ordersList.innerHTML = `<p class="empty-message">Loading orders...</p>`;
 
     try {
-        const response = await fetch("/api/admin/orders", {
+        const response = await fetch("/api/orders", {
+
             method: "GET",
             credentials: "include"
         });
@@ -256,39 +258,17 @@ function renderOrders(orders) {
         const shippingAddress = formatShippingAddress(order);
 
         return `
-            <div class="order-card">
-                <div class="order-card-top">
-                    <h3>Order #${escapeHtml(order.orderNumber || "N/A")}</h3>
-                    <p class="order-status"><strong>Status:</strong> ${escapeHtml(order.status || "Paid")}</p>
-                </div>
-
-                <div class="order-meta">
-                    <p><strong>Date:</strong> ${escapeHtml(order.date || "Not provided")}</p>
-                    <p><strong>Name:</strong> ${escapeHtml(order.customerName || "Not provided")}</p>
-                    <p><strong>Email:</strong> ${escapeHtml(order.customerEmail || "Not provided")}</p>
-                    <p><strong>Shipping Method:</strong> ${escapeHtml(order.shippingMethod || "Not provided")}</p>
-                    <p><strong>Address:</strong> ${escapeHtml(shippingAddress)}</p>
-                </div>
-
-                <div class="order-items">
-                    <h4>Items Ordered</h4>
-                    ${itemsHtml || "<p>No items found.</p>"}
-                </div>
-
-                <div class="order-totals">
-                    <p><strong>Subtotal:</strong> ${formatMoney(order.subtotal)}</p>
-                    <p><strong>Shipping:</strong> ${formatMoney(order.shipping)}</p>
-                    <p><strong>Total:</strong> ${formatMoney(order.total)}</p>
-                </div>
-
-                <button
-                    class="delete-btn"
-                    type="button"
-                    onclick="deleteOrder('${escapeSingleQuotes(order.orderNumber || "")}')"
-                >
-                    Delete Order
-                </button>
-            </div>
+           <h3>Order #${escapeHtml(order.order_number || "N/A")}</h3>
+<p class="order-status"><strong>Status:</strong> ${escapeHtml(order.status || "Paid")}</p>
+...
+<p><strong>Date:</strong> ${escapeHtml(order.created_at || "Not provided")}</p>
+<p><strong>Name:</strong> ${escapeHtml(order.customer_name || "Not provided")}</p>
+<p><strong>Email:</strong> ${escapeHtml(order.customer_email || "Not provided")}</p>
+<p><strong>Shipping Method:</strong> ${escapeHtml(order.shipping_method || "Not provided")}</p>
+...
+<p><strong>Shipping:</strong> ${formatMoney(order.shipping_total)}</p>
+...
+onclick="deleteOrder('${escapeSingleQuotes(order.order_number || "")}')"
         `;
     }).join("");
 }
