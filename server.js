@@ -105,12 +105,39 @@ function writeJsonFile(filePath, data) {
 // -------------------------
 // STOCK HELPERS
 // -------------------------
-function readStock() {
-    return readJsonFile(STOCK_FILE, {});
+async function readStock() {
+    const { data, error } = await supabase
+        .from("stock")
+        .select("*");
+
+    if (error) {
+        console.error("Supabase readStock error:", error);
+        throw error;
+    }
+
+    const stockMap = {};
+
+    (data || []).forEach(item => {
+        stockMap[item.product_name] = Number(item.quantity || 0);
+    });
+
+    return stockMap;
 }
 
-function saveStock(stock) {
-    writeJsonFile(STOCK_FILE, stock);
+async function updateStockItem(productName, quantity) {
+    const { data, error } = await supabase
+        .from("stock")
+        .update({ quantity: Number(quantity) })
+        .eq("product_name", productName)
+        .select()
+        .single();
+
+    if (error) {
+        console.error("Supabase updateStockItem error:", error);
+        throw error;
+    }
+
+    return data;
 }
 
 // -------------------------
@@ -292,9 +319,13 @@ app.get("/admin-login", (req, res) => {
 // -------------------------
 // STOCK ROUTES
 // -------------------------
-app.get("/api/stock", (req, res) => {
+// -------------------------
+// STOCK ROUTES (SUPABASE VERSION)
+// -------------------------
+
+app.get("/api/stock", async (req, res) => {
     try {
-        const stock = readStock();
+        const stock = await readStock();
         res.json(stock);
     } catch (error) {
         console.error("STOCK READ ERROR:", error);
@@ -304,9 +335,9 @@ app.get("/api/stock", (req, res) => {
     }
 });
 
-app.get("/api/admin/stock", requireAdmin, (req, res) => {
+app.get("/api/admin/stock", requireAdmin, async (req, res) => {
     try {
-        const stock = readStock();
+        const stock = await readStock();
         res.json(stock);
     } catch (error) {
         console.error("ADMIN STOCK READ ERROR:", error);
@@ -316,7 +347,7 @@ app.get("/api/admin/stock", requireAdmin, (req, res) => {
     }
 });
 
-app.post("/api/admin/update-stock", requireAdmin, (req, res) => {
+app.post("/api/admin/update-stock", requireAdmin, async (req, res) => {
     try {
         const { productName, stock } = req.body;
 
@@ -326,14 +357,13 @@ app.post("/api/admin/update-stock", requireAdmin, (req, res) => {
             });
         }
 
-        const currentStock = readStock();
-        currentStock[productName] = stock;
-        saveStock(currentStock);
+        await updateStockItem(productName, stock);
+        const updatedStock = await readStock();
 
         res.json({
             success: true,
             message: `${productName} stock updated.`,
-            stock: currentStock
+            stock: updatedStock
         });
     } catch (error) {
         console.error("ADMIN STOCK UPDATE ERROR:", error);
@@ -684,18 +714,21 @@ app.post("/webhook", async (req, res) => {
             console.log(`✅ Order saved to Supabase: ${orderNumber}`);
             console.log("CART FOR STOCK UPDATE:", cart);
 
-            const stock = readStock();
+            
+const stock = await readStock();
 
-            cart.forEach(item => {
-                if (stock[item.name] !== undefined) {
-                    stock[item.name] -= item.quantity;
+for (const item of cart) {
+    if (stock[item.name] !== undefined) {
+        const newQuantity = Math.max(
+            0,
+            Number(stock[item.name]) - Number(item.quantity || 0)
+        );
 
-                    if (stock[item.name] < 0) {
-                        stock[item.name] = 0;
-                    }
-                }
-            });
+        await updateStockItem(item.name, newQuantity);
+    }
+}
 
+console.log("✅ Stock updated in Supabase");
             saveStock(stock);
             console.log("✅ Stock updated");
         } catch (error) {
