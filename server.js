@@ -18,15 +18,15 @@ const supabase = createClient(
 );
 
 const STOCK_FILE = path.join(__dirname, "stock.json");
-const ORDERS_FILE = path.join(__dirname, "orders.json");
 
 // SIMPLE ADMIN LOGIN
 // CHANGE THESE LATER
 const ADMIN_USER = "admin";
 const ADMIN_PASS = "hellyea2020!";
 
-
-//updates cache everywhere
+// -------------------------
+// CACHE FIX FOR cart.js?v=2
+// -------------------------
 app.use((req, res, next) => {
     if (req.url.startsWith("/cart.js")) {
         req.url = "/cart.js";
@@ -46,14 +46,14 @@ app.use(session({
     cookie: {
         secure: false,
         httpOnly: true,
-        maxAge: 1000 * 60 * 60 * 2 // 2 hours
+        maxAge: 1000 * 60 * 60 * 2
     }
 }));
 
-// IMPORTANT: Stripe webhook must use raw body
+// Stripe webhook needs raw body
 app.use("/webhook", express.raw({ type: "application/json" }));
 
-// Everything else can use normal JSON
+// Everything else can use JSON
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
@@ -71,39 +71,12 @@ function requireAdmin(req, res, next) {
 }
 
 // -------------------------
-// SIMPLE ADMIN LOGIN ROUTES
+// HELPERS
 // -------------------------
-app.post("/admin-login", (req, res) => {
-    const { username, password } = req.body;
+function generateOrderNumber() {
+    return `TFS-${Date.now()}`;
+}
 
-    if (username === ADMIN_USER && password === ADMIN_PASS) {
-        req.session.isAdmin = true;
-        return res.json({ success: true });
-    }
-
-    return res.status(401).json({
-        success: false,
-        message: "Invalid login"
-    });
-});
-
-app.post("/admin-logout", (req, res) => {
-    req.session.destroy(() => {
-        res.json({ success: true });
-    });
-});
-
-app.get("/api/admin/check", (req, res) => {
-    if (req.session && req.session.isAdmin) {
-        return res.json({ loggedIn: true });
-    }
-
-    return res.status(401).json({ loggedIn: false });
-});
-
-// -------------------------
-// FILE HELPERS
-// -------------------------
 function readJsonFile(filePath, fallbackValue) {
     try {
         if (!fs.existsSync(filePath)) {
@@ -141,32 +114,128 @@ function saveStock(stock) {
 }
 
 // -------------------------
-// ORDER HELPERS
+// SUPABASE ORDER HELPERS
 // -------------------------
-function readOrders() {
-    return readJsonFile(ORDERS_FILE, []);
+async function getAllOrders() {
+    const { data, error } = await supabase
+        .from("orders")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+    if (error) {
+        console.error("Supabase getAllOrders error:", error);
+        throw error;
+    }
+
+    return data || [];
 }
 
-function saveOrders(orders) {
-    writeJsonFile(ORDERS_FILE, orders);
+async function getOrderByOrderNumber(orderNumber) {
+    const { data, error } = await supabase
+        .from("orders")
+        .select("*")
+        .eq("order_number", orderNumber)
+        .maybeSingle();
+
+    if (error) {
+        console.error("Supabase getOrderByOrderNumber error:", error);
+        throw error;
+    }
+
+    return data;
 }
 
-function generateOrderNumber() {
-    return `TFS-${Date.now()}`;
+async function getOrderBySessionId(sessionId) {
+    const { data, error } = await supabase
+        .from("orders")
+        .select("*")
+        .eq("stripe_session_id", sessionId)
+        .maybeSingle();
+
+    if (error) {
+        console.error("Supabase getOrderBySessionId error:", error);
+        throw error;
+    }
+
+    return data;
 }
 
-function findOrderBySessionId(sessionId) {
-    const orders = readOrders();
-    return orders.find(order => order.stripeSessionId === sessionId);
+async function getOrderByOrderNumberAndEmail(orderNumber, email) {
+    const { data, error } = await supabase
+        .from("orders")
+        .select("*")
+        .eq("order_number", orderNumber)
+        .ilike("customer_email", email)
+        .maybeSingle();
+
+    if (error) {
+        console.error("Supabase getOrderByOrderNumberAndEmail error:", error);
+        throw error;
+    }
+
+    return data;
 }
 
-function findOrderByOrderNumber(orderNumber) {
-    const orders = readOrders();
-    return orders.find(order => order.orderNumber === orderNumber);
+async function createOrder(orderData) {
+    const { data, error } = await supabase
+        .from("orders")
+        .insert([orderData])
+        .select()
+        .single();
+
+    if (error) {
+        console.error("Supabase createOrder error:", error);
+        throw error;
+    }
+
+    return data;
+}
+
+async function deleteOrderByOrderNumber(orderNumber) {
+    const { error } = await supabase
+        .from("orders")
+        .delete()
+        .eq("order_number", orderNumber);
+
+    if (error) {
+        console.error("Supabase deleteOrderByOrderNumber error:", error);
+        throw error;
+    }
 }
 
 // -------------------------
-// PAGE ROUTES
+// ADMIN LOGIN ROUTES
+// -------------------------
+app.post("/admin-login", (req, res) => {
+    const { username, password } = req.body;
+
+    if (username === ADMIN_USER && password === ADMIN_PASS) {
+        req.session.isAdmin = true;
+        return res.json({ success: true });
+    }
+
+    return res.status(401).json({
+        success: false,
+        message: "Invalid login"
+    });
+});
+
+app.post("/admin-logout", (req, res) => {
+    req.session.destroy(() => {
+        res.json({ success: true });
+    });
+});
+
+app.get("/api/admin/check", (req, res) => {
+    if (req.session && req.session.isAdmin) {
+        return res.json({ loggedIn: true });
+    }
+
+    return res.status(401).json({ loggedIn: false });
+});
+
+// -------------------------
+// TEST SUPABASE
 // -------------------------
 app.get("/test-supabase", async (req, res) => {
     try {
@@ -193,6 +262,9 @@ app.get("/test-supabase", async (req, res) => {
     }
 });
 
+// -------------------------
+// PAGE ROUTES
+// -------------------------
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "index.html"));
 });
@@ -218,7 +290,7 @@ app.get("/admin-login", (req, res) => {
 });
 
 // -------------------------
-// API ROUTE - GET LIVE STOCK
+// STOCK ROUTES
 // -------------------------
 app.get("/api/stock", (req, res) => {
     try {
@@ -228,106 +300,6 @@ app.get("/api/stock", (req, res) => {
         console.error("STOCK READ ERROR:", error);
         res.status(500).json({
             error: "Failed to read stock."
-        });
-    }
-});
-
-// -------------------------
-// API ROUTE - GET ALL ORDERS
-// Customer-facing for now
-// -------------------------
-app.get("/api/orders", requireAdmin, (req, res) => {
-    try {
-        const orders = readOrders();
-        res.json(orders);
-    } catch (error) {
-        console.error("ORDERS READ ERROR:", error);
-        res.status(500).json({
-            error: "Failed to read orders."
-        });
-    }
-});
-
-// -------------------------
-// API ROUTE - GET ONE ORDER BY ORDER NUMBER
-// -------------------------
-
-   
-
-// -------------------------
-// API ROUTE - GET ORDER BY STRIPE SESSION ID
-// -------------------------
-app.get("/api/order/session/:sessionId", (req, res) => {
-    try {
-        const { sessionId } = req.params;
-        const order = findOrderBySessionId(sessionId);
-
-        if (!order) {
-            return res.status(404).json({
-                error: "Order not found for this session."
-            });
-        }
-
-        res.json(order);
-    } catch (error) {
-        console.error("SESSION ORDER LOOKUP ERROR:", error);
-        res.status(500).json({
-            error: "Failed to find session order."
-        });
-    }
-});
-
-// order found system for order look up page
-
-app.post("/lookup-order", (req, res) => {
-    try {
-        const { orderNumber, email } = req.body;
-
-        if (!orderNumber || !email) {
-            return res.status(400).json({
-                error: "Order number and email are required."
-            });
-        }
-
-        const orders = readOrders();
-
-        const cleanOrderNumber = orderNumber.trim().toLowerCase();
-        const cleanEmail = email.trim().toLowerCase();
-
-        const foundOrder = orders.find(order => {
-            const savedOrderNumber = (order.orderNumber || "").trim().toLowerCase();
-            const savedEmail = (order.customerEmail || order.email || "").trim().toLowerCase();
-
-            return savedOrderNumber === cleanOrderNumber && savedEmail === cleanEmail;
-        });
-
-        if (!foundOrder) {
-            return res.status(404).json({
-                error: "Order not found."
-            });
-        }
-
-        res.json(foundOrder);
-    } catch (error) {
-        console.error("PRIVATE ORDER LOOKUP ERROR:", error);
-        res.status(500).json({
-            error: "Failed to look up order."
-        });
-    }
-});
-
-// -------------------------
-// ADMIN ROUTES
-// NOW PROTECTED
-// -------------------------
-app.get("/api/admin/orders", requireAdmin, (req, res) => {
-    try {
-        const orders = readOrders();
-        res.json(orders);
-    } catch (error) {
-        console.error("ADMIN ORDERS READ ERROR:", error);
-        res.status(500).json({
-            error: "Failed to read admin orders."
         });
     }
 });
@@ -371,7 +343,104 @@ app.post("/api/admin/update-stock", requireAdmin, (req, res) => {
     }
 });
 
-app.post("/api/admin/delete-order", requireAdmin, (req, res) => {
+// -------------------------
+// ORDER ROUTES
+// -------------------------
+app.get("/api/orders", requireAdmin, async (req, res) => {
+    try {
+        const orders = await getAllOrders();
+        res.json(orders);
+    } catch (error) {
+        console.error("ORDERS READ ERROR:", error);
+        res.status(500).json({
+            error: "Failed to read orders."
+        });
+    }
+});
+
+app.get("/api/order/:orderNumber", requireAdmin, async (req, res) => {
+    try {
+        const { orderNumber } = req.params;
+        const order = await getOrderByOrderNumber(orderNumber);
+
+        if (!order) {
+            return res.status(404).json({
+                error: "Order not found."
+            });
+        }
+
+        res.json(order);
+    } catch (error) {
+        console.error("ORDER LOOKUP ERROR:", error);
+        res.status(500).json({
+            error: "Failed to find order."
+        });
+    }
+});
+
+app.get("/api/order/session/:sessionId", async (req, res) => {
+    try {
+        const { sessionId } = req.params;
+        const order = await getOrderBySessionId(sessionId);
+
+        if (!order) {
+            return res.status(404).json({
+                error: "Order not found for this session."
+            });
+        }
+
+        res.json(order);
+    } catch (error) {
+        console.error("SESSION ORDER LOOKUP ERROR:", error);
+        res.status(500).json({
+            error: "Failed to find session order."
+        });
+    }
+});
+
+app.post("/lookup-order", async (req, res) => {
+    try {
+        const { orderNumber, email } = req.body;
+
+        if (!orderNumber || !email) {
+            return res.status(400).json({
+                error: "Order number and email are required."
+            });
+        }
+
+        const order = await getOrderByOrderNumberAndEmail(
+            orderNumber.trim(),
+            email.trim()
+        );
+
+        if (!order) {
+            return res.status(404).json({
+                error: "Order not found."
+            });
+        }
+
+        res.json(order);
+    } catch (error) {
+        console.error("PRIVATE ORDER LOOKUP ERROR:", error);
+        res.status(500).json({
+            error: "Failed to look up order."
+        });
+    }
+});
+
+app.get("/admin/orders", requireAdmin, async (req, res) => {
+    try {
+        const orders = await getAllOrders();
+        res.json(orders);
+    } catch (error) {
+        console.error("ADMIN ORDERS LOAD ERROR:", error);
+        res.status(500).json({
+            error: "Failed to load orders."
+        });
+    }
+});
+
+app.post("/api/admin/delete-order", requireAdmin, async (req, res) => {
     try {
         const { orderNumber } = req.body;
 
@@ -381,16 +450,15 @@ app.post("/api/admin/delete-order", requireAdmin, (req, res) => {
             });
         }
 
-        const orders = readOrders();
-        const updatedOrders = orders.filter(order => order.orderNumber !== orderNumber);
+        const existingOrder = await getOrderByOrderNumber(orderNumber);
 
-        if (updatedOrders.length === orders.length) {
+        if (!existingOrder) {
             return res.status(404).json({
                 error: "Order not found."
             });
         }
 
-        saveOrders(updatedOrders);
+        await deleteOrderByOrderNumber(orderNumber);
 
         res.json({
             success: true,
@@ -424,6 +492,7 @@ function calculateShipping(cart) {
         return 12.95;
     }
 }
+
 app.post("/checkout", async (req, res) => {
     try {
         const cart = req.body.cart || [];
@@ -509,7 +578,7 @@ app.post("/checkout", async (req, res) => {
 
 // -------------------------
 // STRIPE WEBHOOK
-// Save order + update stock after successful payment
+// Save order to Supabase + update stock.json
 // -------------------------
 app.post("/webhook", async (req, res) => {
     const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -536,9 +605,11 @@ app.post("/webhook", async (req, res) => {
                 generateOrderNumber();
 
             const shipping = Number(session.metadata?.shipping || 0);
-            const existingOrder = findOrderBySessionId(session.id);
+
+            const existingOrder = await getOrderBySessionId(session.id);
 
             if (!existingOrder) {
+
                 const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
                     limit: 100
                 });
@@ -546,26 +617,13 @@ app.post("/webhook", async (req, res) => {
                 const cart = lineItems.data
                     .filter(item => item.description !== "Shipping")
                     .map(item => ({
-                        name: item.description || "Soap Item",
-                        price: Number(item.amount_total || 0) / 100 / Number(item.quantity || 1),
-                        quantity: Number(item.quantity || 1)
+                        name: item.description,
+                        price: item.amount_total / 100 / item.quantity,
+                        quantity: item.quantity
                     }));
 
-                const subtotal = cart.reduce((total, item) => {
-                    return total + (Number(item.price || 0) * Number(item.quantity || 0));
-                }, 0);
-
+                const subtotal = cart.reduce((t, i) => t + (i.price * i.quantity), 0);
                 const total = subtotal + shipping;
-
-                const customerName =
-                    session.shipping_details?.name ||
-                    session.customer_details?.name ||
-                    "Not provided";
-
-                const customerEmail =
-                    session.customer_details?.email ||
-                    session.customer_email ||
-                    "Not provided";
 
                 const shippingAddressObject =
                     session.shipping_details?.address ||
@@ -579,57 +637,61 @@ app.post("/webhook", async (req, res) => {
                     shippingAddressObject.state,
                     shippingAddressObject.postal_code,
                     shippingAddressObject.country
-                ]
-                    .filter(Boolean)
-                    .join(", ");
-
-                console.log("SESSION SHIPPING DETAILS:", session.shipping_details);
-                console.log("SESSION CUSTOMER DETAILS:", session.customer_details);
+                ].filter(Boolean).join(", ");
 
                 const newOrder = {
-                    orderNumber,
-                    stripeSessionId: session.id,
-                    stripePaymentIntent: session.payment_intent || "",
+                    order_number: orderNumber,
+                    stripe_session_id: session.id,
+                    stripe_payment_intent: session.payment_intent || "",
+
                     items: cart,
                     subtotal,
-                    shipping,
+                    shipping_total: shipping,
                     total,
                     status: "Paid",
-                    date: new Date().toLocaleString(),
-                    customerName,
-                    customerEmail,
-                    shippingMethod: shipping > 0 ? `Shipping - $${shipping.toFixed(2)}` : "Free",
-                    shippingAddress,
+
+                    customer_name: session.customer_details?.name || "Not provided",
+                    customer_email: session.customer_details?.email || "Not provided",
+
+                    shipping_method: shipping > 0 ? `Shipping - $${shipping.toFixed(2)}` : "Free",
+
+                    shipping_address: shippingAddress,
                     street: shippingAddressObject.line1 || "",
+                    line2: shippingAddressObject.line2 || "",
                     city: shippingAddressObject.city || "",
                     state: shippingAddressObject.state || "",
-                    zip: shippingAddressObject.postal_code || ""
+                    zip: shippingAddressObject.postal_code || "",
+                    country: shippingAddressObject.country || "",
+
+                    shipping: {
+                        full_address: shippingAddress,
+                        street: shippingAddressObject.line1 || "",
+                        line2: shippingAddressObject.line2 || "",
+                        city: shippingAddressObject.city || "",
+                        state: shippingAddressObject.state || "",
+                        zip: shippingAddressObject.postal_code || "",
+                        country: shippingAddressObject.country || ""
+                    }
                 };
 
-                const orders = readOrders();
-                orders.unshift(newOrder);
-                saveOrders(orders);
-                console.log(`✅ Order saved: ${orderNumber}`);
+                await createOrder(newOrder);
+                console.log("✅ Order saved");
 
                 const stock = readStock();
 
                 cart.forEach(item => {
                     if (stock[item.name] !== undefined) {
                         stock[item.name] -= item.quantity;
-
-                        if (stock[item.name] < 0) {
-                            stock[item.name] = 0;
-                        }
+                        if (stock[item.name] < 0) stock[item.name] = 0;
                     }
                 });
 
                 saveStock(stock);
-                console.log("✅ Stock updated after successful payment.");
-            } else {
-                console.log(`ℹ️ Order already exists for session ${session.id}`);
+                console.log("✅ Stock updated");
             }
+
         } catch (error) {
-            console.error("WEBHOOK ORDER/STOCK ERROR:", error);
+            console.error("WEBHOOK PROCESS ERROR:", error);
         }
     }
 
