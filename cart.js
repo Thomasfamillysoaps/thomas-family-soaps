@@ -452,7 +452,7 @@ async function loadOrderFromSession() {
         localStorage.removeItem("cart");
         localStorage.removeItem("pendingOrderNumber");
 
-        orderNumberDisplay.textContent = "Order #: " + (order.orderNumber || "N/A");
+        oorderNumberDisplay.textContent = "Order #: " + (order.order_number || "N/A");
 
         let html = "<h3>Your Order Summary</h3>";
 
@@ -467,7 +467,7 @@ async function loadOrderFromSession() {
 
         html += "<hr>";
         html += `<p>Subtotal: $${Number(order.subtotal || 0).toFixed(2)}</p>`;
-        html += `<p>Shipping: $${Number(order.shipping || 0).toFixed(2)}</p>`;
+        html += `<p>Shipping: $${Number(order.shipping_total || 0).toFixed(2)}</p>`;
         html += `<p><strong>Total Paid: $${Number(order.total || 0).toFixed(2)}</strong></p>`;
 
         summary.innerHTML = html;
@@ -618,25 +618,24 @@ function renderLookupOrder(order) {
     });
 
     resultsBox.innerHTML = `
-        <div class="order-summary">
-            <h3>Order ${order.orderNumber || ""}</h3>
-            <p>${order.date || ""}</p>
-            <p>Status: ${order.status || "Paid"}</p>
-            <p><strong>Name:</strong> ${order.customerName || "Not provided"}</p>
-            <p><strong>Email:</strong> ${order.customerEmail || "Not provided"}</p>
-            <p><strong>Shipping Address:</strong> ${order.shippingAddress || "Not provided"}</p>
+    <div class="order-summary">
+        <h3>Order ${order.order_number || ""}</h3>
+        <p>${order.created_at || ""}</p>
+        <p>Status: ${order.status || "Paid"}</p>
+        <p><strong>Name:</strong> ${order.customer_name || "Not provided"}</p>
+        <p><strong>Email:</strong> ${order.customer_email || "Not provided"}</p>
+        <p><strong>Shipping Address:</strong> ${order.shipping_address || "Not provided"}</p>
 
-            <div class="order-items-list">
-                <h4>Items Ordered:</h4>
-                ${itemsHtml}
-            </div>
-
-            <p>Subtotal: $${Number(order.subtotal || 0).toFixed(2)}</p>
-            <p>Shipping: $${Number(order.shipping || 0).toFixed(2)}</p>
-            <p><strong>Total: $${Number(order.total || 0).toFixed(2)}</strong></p>
+        <div class="order-items-list">
+            <h4>Items Ordered:</h4>
+            ${itemsHtml}
         </div>
-    `;
-}
+
+        <p>Subtotal: $${Number(order.subtotal || 0).toFixed(2)}</p>
+        <p>Shipping: $${Number(order.shipping_total || 0).toFixed(2)}</p>
+        <p><strong>Total: $${Number(order.total || 0).toFixed(2)}</strong></p>
+    </div>
+`;
 
 // =========================
 // PAGE LOAD
