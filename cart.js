@@ -199,6 +199,27 @@ async function updateStockDisplay(name, stockId, buttonId) {
 }
 
 // =========================
+// SHIPPING
+// =========================
+function calculateShipping(cart) {
+    let totalQuantity = 0;
+
+    cart.forEach(item => {
+        totalQuantity += item.quantity;
+    });
+
+    if (totalQuantity === 0) {
+        return 0;
+    } else if (totalQuantity <= 2) {
+        return 5.95;
+    } else if (totalQuantity <= 5) {
+        return 8.95;
+    } else {
+        return 12.95;
+    }
+}
+
+// =========================
 // CART DISPLAY
 // =========================
 function displayCart() {
@@ -295,9 +316,10 @@ async function changeQuantity(index, change) {
 function updateTotal() {
     let cart = getCart();
 
+    let subtotalText = document.getElementById("total-price");
+    let shippingText = document.getElementById("shipping-price");
     let finalTotalText = document.getElementById("final-total");
-
-    if (!finalTotalText) return;
+    let orderTotalField = document.getElementById("order-total-field");
 
     let subtotal = 0;
 
@@ -305,7 +327,24 @@ function updateTotal() {
         subtotal += item.price * item.quantity;
     });
 
-    finalTotalText.innerHTML = `Subtotal: $${subtotal.toFixed(2)}`;
+    let shipping = calculateShipping(cart);
+    let finalTotal = subtotal + shipping;
+
+    if (subtotalText) {
+        subtotalText.textContent = `Subtotal: $${subtotal.toFixed(2)}`;
+    }
+
+    if (shippingText) {
+        shippingText.textContent = `Shipping: $${shipping.toFixed(2)}`;
+    }
+
+    if (finalTotalText) {
+        finalTotalText.textContent = `Final Total: $${finalTotal.toFixed(2)}`;
+    }
+
+    if (orderTotalField) {
+        orderTotalField.value = `$${finalTotal.toFixed(2)}`;
+    }
 }
 
 // =========================
@@ -338,58 +377,6 @@ function prepareOrder() {
 }
 
 // =========================
-// CHECKOUT INFO
-// =========================
-function saveCheckoutInfo() {
-    const fields = {
-        customer_name: document.getElementById("customer-name")?.value || "",
-        street_address: document.getElementById("street-address")?.value || "",
-        city: document.getElementById("city")?.value || "",
-        state: document.getElementById("state")?.value || "",
-        zip: document.getElementById("zip")?.value || "",
-        customer_email: document.getElementById("customer-email")?.value || "",
-        shipping_method: document.getElementById("shipping-method")?.value || "5.99"
-    };
-
-    localStorage.setItem("checkoutInfo", JSON.stringify(fields));
-}
-
-function loadCheckoutInfo() {
-    const saved = JSON.parse(localStorage.getItem("checkoutInfo"));
-    if (!saved) return;
-
-    if (document.getElementById("customer-name")) {
-        document.getElementById("customer-name").value = saved.customer_name || "";
-    }
-
-    if (document.getElementById("street-address")) {
-        document.getElementById("street-address").value = saved.street_address || "";
-    }
-
-    if (document.getElementById("city")) {
-        document.getElementById("city").value = saved.city || "";
-    }
-
-    if (document.getElementById("state")) {
-        document.getElementById("state").value = saved.state || "";
-    }
-
-    if (document.getElementById("zip")) {
-        document.getElementById("zip").value = saved.zip || "";
-    }
-
-    if (document.getElementById("customer-email")) {
-        document.getElementById("customer-email").value = saved.customer_email || "";
-    }
-
-    if (document.getElementById("shipping-method")) {
-        document.getElementById("shipping-method").value = saved.shipping_method || "5.99";
-    }
-
-    updateTotal();
-}
-
-// =========================
 // CHECKOUT
 // =========================
 async function startCheckout() {
@@ -400,8 +387,7 @@ async function startCheckout() {
         return;
     }
 
-    const shippingDropdown = document.getElementById("shipping-method");
-    const shipping = parseFloat(shippingDropdown?.value || 0) || 0;
+    const shipping = calculateShipping(cart);
 
     let orderNumber = localStorage.getItem("pendingOrderNumber");
     if (!orderNumber) {
@@ -464,7 +450,6 @@ async function loadOrderFromSession() {
         }
 
         localStorage.removeItem("cart");
-        localStorage.removeItem("checkoutInfo");
         localStorage.removeItem("pendingOrderNumber");
 
         orderNumberDisplay.textContent = "Order #: " + (order.orderNumber || "N/A");
@@ -493,9 +478,6 @@ async function loadOrderFromSession() {
     }
 }
 
-// =========================
-// ORDERS PAGE
-// =========================
 // =========================
 // ORDERS PAGE
 // =========================
@@ -572,11 +554,6 @@ function updateCartCount() {
 
     cartLink.textContent = `🛒 View Your Cart (${totalItems})`;
 }
-
-// =========================
-// ORDER LOOKUP PAGE
-// TEMP VERSION - ORDER NUMBER ONLY
-// =========================
 
 // =========================
 // ORDER LOOKUP PAGE
@@ -660,6 +637,7 @@ function renderLookupOrder(order) {
         </div>
     `;
 }
+
 // =========================
 // PAGE LOAD
 // =========================
@@ -675,26 +653,10 @@ window.onload = function () {
 
     displayCart();
     updateCartCount();
-    loadCheckoutInfo();
 
-    [
-        "customer-name",
-        "street-address",
-        "city",
-        "state",
-        "zip",
-        "customer-email",
-        "shipping-method"
-    ].forEach(id => {
-        let field = document.getElementById(id);
-        if (field) {
-            field.addEventListener("input", saveCheckoutInfo);
-            field.addEventListener("change", saveCheckoutInfo);
-        }
-    });
     const findOrderBtn = document.getElementById("find-order-btn");
 
-if (findOrderBtn) {
-    findOrderBtn.addEventListener("click", lookupOrder);
-}
+    if (findOrderBtn) {
+        findOrderBtn.addEventListener("click", lookupOrder);
+    }
 };
