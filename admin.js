@@ -265,10 +265,13 @@ function renderOrders(orders) {
 <p><strong>Name:</strong> ${escapeHtml(order.customer_name || "Not provided")}</p>
 <p><strong>Email:</strong> ${escapeHtml(order.customer_email || "Not provided")}</p>
 <p><strong>Shipping Method:</strong> ${escapeHtml(order.shipping_method || "Not provided")}</p>
-...
-<p><strong>Shipping:</strong> ${formatMoney(order.shipping_total)}</p>
-...
-onclick="deleteOrder('${escapeSingleQuotes(order.order_number || "")}')"
+<button
+    class="delete-order-btn"
+    type="button"
+    onclick="deleteOrder('${escapeSingleQuotes(order.order_number || "")}')"
+>
+    Delete Order
+</button>
         `;
     }).join("");
 }
