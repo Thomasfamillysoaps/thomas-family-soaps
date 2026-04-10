@@ -295,26 +295,17 @@ async function changeQuantity(index, change) {
 function updateTotal() {
     let cart = getCart();
 
-    let shippingDropdown = document.getElementById("shipping-method");
     let finalTotalText = document.getElementById("final-total");
-    let orderTotalField = document.getElementById("order-total-field");
 
-    if (!shippingDropdown || !finalTotalText) return;
-
-    let shipping = parseFloat(shippingDropdown.value) || 0;
+    if (!finalTotalText) return;
 
     let subtotal = 0;
+
     cart.forEach(item => {
         subtotal += item.price * item.quantity;
     });
 
-    let finalTotal = subtotal + shipping;
-
-    finalTotalText.innerHTML = `Final Total: $${finalTotal.toFixed(2)}`;
-
-    if (orderTotalField) {
-        orderTotalField.value = `$${finalTotal.toFixed(2)}`;
-    }
+    finalTotalText.innerHTML = `Subtotal: $${subtotal.toFixed(2)}`;
 }
 
 // =========================
