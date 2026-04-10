@@ -108,7 +108,8 @@ function writeJsonFile(filePath, data) {
 async function readStock() {
     const { data, error } = await supabase
         .from("stock")
-        .select("*");
+        .select("*")
+        .order("product_name", { ascending: true });
 
     if (error) {
         console.error("Supabase readStock error:", error);
