@@ -586,3 +586,24 @@ body {
         height: 140px;
     }
 }
+
+.shipping-disclaimer {
+    background: #fff4f4;
+    border: 1px solid #f1caca;
+    border-left: 5px solid #b22222;
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin: 15px 0;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.shipping-disclaimer p {
+    margin: 0;
+    color: #6b1d1d;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.shipping-disclaimer strong {
+    color: #b22222;
+}
