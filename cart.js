@@ -41,7 +41,7 @@ async function getStock() {
 // TOAST
 // =========================
 function showToast(message) {
-    let toast = document.createElement("div");
+    const toast = document.createElement("div");
     toast.className = "cart-toast";
     toast.textContent = message;
 
@@ -75,16 +75,16 @@ function saveCart(cart) {
 // ADD TO CART
 // =========================
 function addToCart(name, price, image = "") {
-    let cart = getCart();
-    let existingItem = cart.find(item => item.name === name);
+    const cart = getCart();
+    const existingItem = cart.find(item => item.name === name);
 
     if (existingItem) {
         existingItem.quantity += 1;
     } else {
         cart.push({
-            name: name,
-            price: price,
-            image: image,
+            name,
+            price,
+            image,
             quantity: 1
         });
     }
@@ -95,13 +95,13 @@ function addToCart(name, price, image = "") {
 }
 
 async function addToCartWithQuantity(name, price, image, qtyId, stockId, buttonId) {
-    let stock = await getStock();
-    let quantityInput = document.getElementById(qtyId);
+    const stock = await getStock();
+    const quantityInput = document.getElementById(qtyId);
 
     if (!quantityInput) return;
 
-    let quantity = parseInt(quantityInput.value, 10);
-    let currentStock = stock[name] ?? 0;
+    const quantity = parseInt(quantityInput.value, 10);
+    const currentStock = stock[name] ?? 0;
 
     if (isNaN(quantity) || quantity < 1) {
         showToast("Please select a valid quantity.");
@@ -113,9 +113,9 @@ async function addToCartWithQuantity(name, price, image, qtyId, stockId, buttonI
         return;
     }
 
-    let cart = getCart();
-    let existing = cart.find(item => item.name === name);
-    let cartQty = existing ? existing.quantity : 0;
+    const cart = getCart();
+    const existing = cart.find(item => item.name === name);
+    const cartQty = existing ? existing.quantity : 0;
 
     if (cartQty + quantity > currentStock) {
         showToast("Not enough stock available!");
@@ -126,10 +126,10 @@ async function addToCartWithQuantity(name, price, image, qtyId, stockId, buttonI
         existing.quantity += quantity;
     } else {
         cart.push({
-            name: name,
-            price: price,
-            image: image,
-            quantity: quantity
+            name,
+            price,
+            image,
+            quantity
         });
     }
 
@@ -139,12 +139,12 @@ async function addToCartWithQuantity(name, price, image, qtyId, stockId, buttonI
 }
 
 async function addToCartWithStock(name, price, image, stockId, buttonId) {
-    let stock = await getStock();
+    const stock = await getStock();
 
-    let stockElement = document.getElementById(stockId);
-    let button = document.getElementById(buttonId);
+    const stockElement = document.getElementById(stockId);
+    const button = document.getElementById(buttonId);
 
-    let currentStock = stock[name] ?? 0;
+    const currentStock = stock[name] ?? 0;
 
     if (currentStock <= 0) {
         if (stockElement) {
@@ -160,9 +160,9 @@ async function addToCartWithStock(name, price, image, stockId, buttonId) {
         return;
     }
 
-    let cart = getCart();
-    let existing = cart.find(item => item.name === name);
-    let cartQty = existing ? existing.quantity : 0;
+    const cart = getCart();
+    const existing = cart.find(item => item.name === name);
+    const cartQty = existing ? existing.quantity : 0;
 
     if (cartQty >= currentStock) {
         showToast("No more stock available!");
@@ -176,14 +176,14 @@ async function addToCartWithStock(name, price, image, stockId, buttonId) {
 // STOCK DISPLAY
 // =========================
 async function updateStockDisplay(name, stockId, buttonId) {
-    let stock = await getStock();
+    const stock = await getStock();
 
-    let stockElement = document.getElementById(stockId);
-    let button = document.getElementById(buttonId);
+    const stockElement = document.getElementById(stockId);
+    const button = document.getElementById(buttonId);
 
     if (!stockElement || !button) return;
 
-    let currentStock = stock[name] ?? 0;
+    const currentStock = stock[name] ?? 0;
 
     if (currentStock <= 0) {
         stockElement.textContent = "SOLD OUT";
@@ -205,7 +205,7 @@ function calculateShipping(cart) {
     let totalQuantity = 0;
 
     cart.forEach(item => {
-        totalQuantity += item.quantity;
+        totalQuantity += Number(item.quantity || 0);
     });
 
     if (totalQuantity === 0) {
@@ -223,9 +223,9 @@ function calculateShipping(cart) {
 // CART DISPLAY
 // =========================
 function displayCart() {
-    let cart = getCart();
-    let cartItems = document.getElementById("cart-items");
-    let totalPrice = document.getElementById("total-price");
+    const cart = getCart();
+    const cartItems = document.getElementById("cart-items");
+    const totalPrice = document.getElementById("total-price");
 
     if (!cartItems || !totalPrice) return;
 
@@ -242,7 +242,7 @@ function displayCart() {
     }
 
     cart.forEach((item, index) => {
-        let itemTotal = item.price * item.quantity;
+        const itemTotal = item.price * item.quantity;
         subtotal += itemTotal;
 
         cartItems.innerHTML += `
@@ -251,7 +251,7 @@ function displayCart() {
 
                 <div class="cart-item-details">
                     <h3>${item.name}</h3>
-                    <p>$${item.price.toFixed(2)} each</p>
+                    <p>$${Number(item.price).toFixed(2)} each</p>
 
                     <div class="cart-quantity-controls">
                         <button type="button" onclick="changeQuantity(${index}, -1)">−</button>
@@ -275,7 +275,7 @@ function displayCart() {
 }
 
 function removeFromCart(index) {
-    let cart = getCart();
+    const cart = getCart();
 
     cart.splice(index, 1);
 
@@ -285,13 +285,13 @@ function removeFromCart(index) {
 }
 
 async function changeQuantity(index, change) {
-    let cart = getCart();
-    let stock = await getStock();
+    const cart = getCart();
+    const stock = await getStock();
 
-    let item = cart[index];
+    const item = cart[index];
     if (!item) return;
 
-    let newQuantity = item.quantity + change;
+    const newQuantity = item.quantity + change;
 
     if (newQuantity < 1) {
         removeFromCart(index);
@@ -314,12 +314,12 @@ async function changeQuantity(index, change) {
 // TOTALS
 // =========================
 function updateTotal() {
-    let cart = getCart();
+    const cart = getCart();
 
-    let subtotalText = document.getElementById("total-price");
-    let shippingText = document.getElementById("shipping-price");
-    let finalTotalText = document.getElementById("final-total");
-    let orderTotalField = document.getElementById("order-total-field");
+    const subtotalText = document.getElementById("total-price");
+    const shippingText = document.getElementById("shipping-price");
+    const finalTotalText = document.getElementById("final-total");
+    const orderTotalField = document.getElementById("order-total-field");
 
     let subtotal = 0;
 
@@ -327,8 +327,8 @@ function updateTotal() {
         subtotal += item.price * item.quantity;
     });
 
-    let shipping = calculateShipping(cart);
-    let finalTotal = subtotal + shipping;
+    const shipping = calculateShipping(cart);
+    const finalTotal = subtotal + shipping;
 
     if (subtotalText) {
         subtotalText.textContent = `Subtotal: $${subtotal.toFixed(2)}`;
@@ -351,12 +351,12 @@ function updateTotal() {
 // ORDER PREP
 // =========================
 function prepareOrder() {
-    let cart = getCart();
+    const cart = getCart();
 
-    let orderItemsField = document.getElementById("order-items-field");
-    let orderNumberField = document.getElementById("order-number-field");
+    const orderItemsField = document.getElementById("order-items-field");
+    const orderNumberField = document.getElementById("order-number-field");
 
-    let orderText = cart.map(item => `${item.name} x${item.quantity}`).join(", ");
+    const orderText = cart.map(item => `${item.name} x${item.quantity}`).join(", ");
 
     let orderNumber = localStorage.getItem("pendingOrderNumber");
 
@@ -452,12 +452,12 @@ async function loadOrderFromSession() {
         localStorage.removeItem("cart");
         localStorage.removeItem("pendingOrderNumber");
 
-        oorderNumberDisplay.textContent = "Order #: " + (order.order_number || "N/A");
+        orderNumberDisplay.textContent = "Order #: " + (order.order_number || "N/A");
 
         let html = "<h3>Your Order Summary</h3>";
 
         (order.items || []).forEach(item => {
-            let itemTotal = Number(item.price || 0) * Number(item.quantity || 0);
+            const itemTotal = Number(item.price || 0) * Number(item.quantity || 0);
 
             html += `
                 <p>${item.name} × ${item.quantity}</p>
@@ -482,7 +482,7 @@ async function loadOrderFromSession() {
 // ORDERS PAGE
 // =========================
 async function displayOrders() {
-    let container = document.getElementById("orders-list");
+    const container = document.getElementById("orders-list");
 
     if (!container) return;
 
@@ -514,8 +514,8 @@ async function displayOrders() {
 
             html += `
                 <div class="order-summary">
-                    <h3>${order.orderNumber || "Order"}</h3>
-                    <p>${order.date || ""}</p>
+                    <h3>${order.order_number || "Order"}</h3>
+                    <p>${order.created_at || ""}</p>
                     <p>Status: ${order.status || "Paid"}</p>
 
                     <div class="order-items-list">
@@ -524,7 +524,7 @@ async function displayOrders() {
                     </div>
 
                     <p>Subtotal: $${Number(order.subtotal || 0).toFixed(2)}</p>
-                    <p>Shipping: $${Number(order.shipping || 0).toFixed(2)}</p>
+                    <p>Shipping: $${Number(order.shipping_total || 0).toFixed(2)}</p>
                     <p><strong>Total: $${Number(order.total || 0).toFixed(2)}</strong></p>
                 </div>
             `;
@@ -541,8 +541,8 @@ async function displayOrders() {
 // CART COUNT
 // =========================
 function updateCartCount() {
-    let cart = getCart();
-    let cartLink = document.getElementById("cart-link");
+    const cart = getCart();
+    const cartLink = document.getElementById("cart-link");
 
     if (!cartLink) return;
 
@@ -618,24 +618,25 @@ function renderLookupOrder(order) {
     });
 
     resultsBox.innerHTML = `
-    <div class="order-summary">
-        <h3>Order ${order.order_number || ""}</h3>
-        <p>${order.created_at || ""}</p>
-        <p>Status: ${order.status || "Paid"}</p>
-        <p><strong>Name:</strong> ${order.customer_name || "Not provided"}</p>
-        <p><strong>Email:</strong> ${order.customer_email || "Not provided"}</p>
-        <p><strong>Shipping Address:</strong> ${order.shipping_address || "Not provided"}</p>
+        <div class="order-summary">
+            <h3>Order ${order.order_number || ""}</h3>
+            <p>${order.created_at || ""}</p>
+            <p>Status: ${order.status || "Paid"}</p>
+            <p><strong>Name:</strong> ${order.customer_name || "Not provided"}</p>
+            <p><strong>Email:</strong> ${order.customer_email || "Not provided"}</p>
+            <p><strong>Shipping Address:</strong> ${order.shipping_address || "Not provided"}</p>
 
-        <div class="order-items-list">
-            <h4>Items Ordered:</h4>
-            ${itemsHtml}
+            <div class="order-items-list">
+                <h4>Items Ordered:</h4>
+                ${itemsHtml}
+            </div>
+
+            <p>Subtotal: $${Number(order.subtotal || 0).toFixed(2)}</p>
+            <p>Shipping: $${Number(order.shipping_total || 0).toFixed(2)}</p>
+            <p><strong>Total: $${Number(order.total || 0).toFixed(2)}</strong></p>
         </div>
-
-        <p>Subtotal: $${Number(order.subtotal || 0).toFixed(2)}</p>
-        <p>Shipping: $${Number(order.shipping_total || 0).toFixed(2)}</p>
-        <p><strong>Total: $${Number(order.total || 0).toFixed(2)}</strong></p>
-    </div>
-`;
+    `;
+}
 
 // =========================
 // PAGE LOAD
