@@ -265,6 +265,7 @@ function renderOrders(orders) {
 <p><strong>Name:</strong> ${escapeHtml(order.customer_name || "Not provided")}</p>
 <p><strong>Email:</strong> ${escapeHtml(order.customer_email || "Not provided")}</p>
 <p><strong>Shipping Method:</strong> ${escapeHtml(order.shipping_method || "Not provided")}</p>
+<p><strong>Shipping Address:</strong> ${escapeHtml(shippingAddress || "Not provided")}</p>
 <button
     class="delete-order-btn"
     type="button"
