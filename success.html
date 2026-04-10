@@ -47,70 +47,12 @@
         </div>
     </footer>
 
-<script src="cart.js?v=3"></script>
+<script src="cart.js?v=2"></script>
 
-<script>
-function loadOrderFromSession() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const sessionId = urlParams.get("session_id");
-
-    if (!sessionId) {
-        console.error("No session ID found in URL");
-        return;
-    }
-
-    fetch(`/api/order/session/${sessionId}`)
-        .then(res => {
-            if (!res.ok) {
-                throw new Error("Order not found");
-            }
-            return res.json();
-        })
-        .then(order => {
-            displayOrder(order);
-        })
-        .catch(err => {
-            console.error("Error loading order:", err);
-        });
-}
-
-function displayOrder(order) {
-    // Order number
-    document.getElementById("order-number-display").textContent =
-        "Order Number: " + order.orderNumber;
-
-    // Order summary box
-    const summary = document.getElementById("order-summary");
-
-    let itemsHTML = "";
-
-    order.items.forEach(item => {
-        itemsHTML += `
-            <p>${item.name} x${item.quantity} - $${(item.price * item.quantity).toFixed(2)}</p>
-        `;
-    });
-
-    summary.innerHTML = `
-        ${itemsHTML}
-        <hr>
-        <p><strong>Subtotal:</strong> $${order.subtotal.toFixed(2)}</p>
-        <p><strong>Shipping:</strong> $${order.shipping.toFixed(2)}</p>
-        <p><strong>Total:</strong> $${order.total.toFixed(2)}</p>
-        <p><strong>Name:</strong> ${order.customerName}</p>
-        <p><strong>Email:</strong> ${order.customerEmail}</p>
-        <p><strong>Address:</strong> ${order.shippingAddress}</p>
-    `;
-}
-
-// Keep this working
-document.addEventListener("DOMContentLoaded", () => {
-    loadOrderFromSession();
-    updateCartCount();
-});
-</script>
-    <script src="cart.js?v=2"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+    loadOrderFromSession();
+
     fetch("header.html")
         .then(response => response.text())
         .then(data => {
