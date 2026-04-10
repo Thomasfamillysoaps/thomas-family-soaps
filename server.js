@@ -50,10 +50,10 @@ app.use(session({
     }
 }));
 
-// Stripe webhook needs raw body
+// Stripe webhook must use raw body
 app.use("/webhook", express.raw({ type: "application/json" }));
 
-// Everything else can use JSON
+// Everything else uses JSON
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
@@ -428,18 +428,6 @@ app.post("/lookup-order", async (req, res) => {
     }
 });
 
-app.get("/admin/orders", requireAdmin, async (req, res) => {
-    try {
-        const orders = await getAllOrders();
-        res.json(orders);
-    } catch (error) {
-        console.error("ADMIN ORDERS LOAD ERROR:", error);
-        res.status(500).json({
-            error: "Failed to load orders."
-        });
-    }
-});
-
 app.post("/api/admin/delete-order", requireAdmin, async (req, res) => {
     try {
         const { orderNumber } = req.body;
@@ -496,7 +484,6 @@ function calculateShipping(cart) {
 app.post("/checkout", async (req, res) => {
     try {
         const cart = req.body.cart || [];
-        const shipping = calculateShipping(cart);
         const orderNumber = req.body.orderNumber || generateOrderNumber();
 
         if (cart.length === 0) {
@@ -505,6 +492,7 @@ app.post("/checkout", async (req, res) => {
             });
         }
 
+        const shipping = calculateShipping(cart);
         const stock = readStock();
 
         for (const item of cart) {
@@ -547,7 +535,7 @@ app.post("/checkout", async (req, res) => {
             });
         }
 
-        const session = await stripe.checkout.sessions.create({
+        const checkoutSession = await stripe.checkout.sessions.create({
             payment_method_types: ["card"],
             mode: "payment",
             billing_address_collection: "required",
@@ -565,13 +553,13 @@ app.post("/checkout", async (req, res) => {
         });
 
         res.json({
-            url: session.url,
+            url: checkoutSession.url,
             orderNumber
         });
     } catch (error) {
         console.error("CHECKOUT ERROR:", error);
         res.status(500).json({
-            error: error.message
+            error: error.message || "Checkout failed."
         });
     }
 });
@@ -596,102 +584,126 @@ app.post("/webhook", async (req, res) => {
     }
 
     if (event.type === "checkout.session.completed") {
-        const session = event.data.object;
+        const checkoutSession = event.data.object;
 
         try {
+            console.log("WEBHOOK HIT:", event.type);
+            console.log("WEBHOOK SESSION ID:", checkoutSession.id);
+
             const orderNumber =
-                session.metadata?.orderNumber ||
-                session.client_reference_id ||
+                checkoutSession.metadata?.orderNumber ||
+                checkoutSession.client_reference_id ||
                 generateOrderNumber();
 
-            const shipping = Number(session.metadata?.shipping || 0);
+            const shipping = Number(checkoutSession.metadata?.shipping || 0);
+            const existingOrder = await getOrderBySessionId(checkoutSession.id);
 
-            const existingOrder = await getOrderBySessionId(session.id);
+            if (existingOrder) {
+                console.log(`ℹ️ Order already exists for session ${checkoutSession.id}`);
+                return res.json({ received: true });
+            }
 
-            if (!existingOrder) {
+            const lineItems = await stripe.checkout.sessions.listLineItems(checkoutSession.id, {
+                limit: 100
+            });
 
-                const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
-                    limit: 100
-                });
+            const cart = lineItems.data
+                .filter(item => item.description !== "Shipping")
+                .map(item => ({
+                    name: item.description || "Soap Item",
+                    price: Number(item.amount_total || 0) / 100 / Number(item.quantity || 1),
+                    quantity: Number(item.quantity || 1)
+                }));
 
-                const cart = lineItems.data
-                    .filter(item => item.description !== "Shipping")
-                    .map(item => ({
-                        name: item.description,
-                        price: item.amount_total / 100 / item.quantity,
-                        quantity: item.quantity
-                    }));
+            const subtotal = cart.reduce((total, item) => {
+                return total + (Number(item.price || 0) * Number(item.quantity || 0));
+            }, 0);
 
-                const subtotal = cart.reduce((t, i) => t + (i.price * i.quantity), 0);
-                const total = subtotal + shipping;
+            const total = subtotal + shipping;
 
-                const shippingAddressObject =
-                    session.shipping_details?.address ||
-                    session.customer_details?.address ||
-                    {};
+            const shippingAddressObject =
+                checkoutSession.shipping_details?.address ||
+                checkoutSession.customer_details?.address ||
+                {};
 
-                const shippingAddress = [
-                    shippingAddressObject.line1,
-                    shippingAddressObject.line2,
-                    shippingAddressObject.city,
-                    shippingAddressObject.state,
-                    shippingAddressObject.postal_code,
-                    shippingAddressObject.country
-                ].filter(Boolean).join(", ");
+            const shippingAddress = [
+                shippingAddressObject.line1,
+                shippingAddressObject.line2,
+                shippingAddressObject.city,
+                shippingAddressObject.state,
+                shippingAddressObject.postal_code,
+                shippingAddressObject.country
+            ].filter(Boolean).join(", ");
 
-                const newOrder = {
-                    order_number: orderNumber,
-                    stripe_session_id: session.id,
-                    stripe_payment_intent: session.payment_intent || "",
+            const newOrder = {
+                order_number: orderNumber,
+                stripe_session_id: checkoutSession.id,
+                stripe_payment_intent: checkoutSession.payment_intent || "",
 
-                    items: cart,
-                    subtotal,
-                    shipping_total: shipping,
-                    total,
-                    status: "Paid",
+                items: cart,
+                subtotal: Number(subtotal || 0),
+                shipping_total: Number(shipping || 0),
+                total: Number(total || 0),
+                status: "Paid",
 
-                    customer_name: session.customer_details?.name || "Not provided",
-                    customer_email: session.customer_details?.email || "Not provided",
+                customer_name:
+                    checkoutSession.customer_details?.name ||
+                    checkoutSession.shipping_details?.name ||
+                    "Not provided",
 
-                    shipping_method: shipping > 0 ? `Shipping - $${shipping.toFixed(2)}` : "Free",
+                customer_email:
+                    checkoutSession.customer_details?.email ||
+                    checkoutSession.customer_email ||
+                    "Not provided",
 
-                    shipping_address: shippingAddress,
+                shipping_method: shipping > 0 ? `Shipping - $${shipping.toFixed(2)}` : "Free",
+
+                shipping_address: shippingAddress || "",
+                street: shippingAddressObject.line1 || "",
+                line2: shippingAddressObject.line2 || "",
+                city: shippingAddressObject.city || "",
+                state: shippingAddressObject.state || "",
+                zip: shippingAddressObject.postal_code || "",
+                country: shippingAddressObject.country || "",
+
+                shipping: {
+                    full_address: shippingAddress || "",
                     street: shippingAddressObject.line1 || "",
                     line2: shippingAddressObject.line2 || "",
                     city: shippingAddressObject.city || "",
                     state: shippingAddressObject.state || "",
                     zip: shippingAddressObject.postal_code || "",
-                    country: shippingAddressObject.country || "",
+                    country: shippingAddressObject.country || ""
+                }
+            };
 
-                    shipping: {
-                        full_address: shippingAddress,
-                        street: shippingAddressObject.line1 || "",
-                        line2: shippingAddressObject.line2 || "",
-                        city: shippingAddressObject.city || "",
-                        state: shippingAddressObject.state || "",
-                        zip: shippingAddressObject.postal_code || "",
-                        country: shippingAddressObject.country || ""
+            console.log("TRYING TO SAVE ORDER:", newOrder);
+
+            await createOrder(newOrder);
+
+            console.log("ORDER SAVE SUCCESS");
+            console.log(`✅ Order saved to Supabase: ${orderNumber}`);
+            console.log("CART FOR STOCK UPDATE:", cart);
+
+            const stock = readStock();
+
+            cart.forEach(item => {
+                if (stock[item.name] !== undefined) {
+                    stock[item.name] -= item.quantity;
+
+                    if (stock[item.name] < 0) {
+                        stock[item.name] = 0;
                     }
-                };
+                }
+            });
 
-                await createOrder(newOrder);
-                console.log("✅ Order saved");
-
-                const stock = readStock();
-
-                cart.forEach(item => {
-                    if (stock[item.name] !== undefined) {
-                        stock[item.name] -= item.quantity;
-                        if (stock[item.name] < 0) stock[item.name] = 0;
-                    }
-                });
-
-                saveStock(stock);
-                console.log("✅ Stock updated");
-            }
-
+            saveStock(stock);
+            console.log("✅ Stock updated");
         } catch (error) {
-            console.error("WEBHOOK PROCESS ERROR:", error);
+            console.error("WEBHOOK PROCESS ERROR FULL:", error);
+            return res.status(500).json({
+                error: error.message || "Webhook failed"
+            });
         }
     }
 
