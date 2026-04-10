@@ -7,21 +7,12 @@
     <link rel="stylesheet" href="about.css">
 </head>
 <body>
-
+<div id="header-placeholder"></div>
     <header class="store-header">
         <img src="tfs logo.png" alt="Thomas Family Soaps Logo" class="logo">
         <h1>About Thomas Family Soaps</h1>
         <p>Handcrafted homemade soaps made with love</p>
 
-        <nav class="navbar">
-            <nav class="navbar">
-    <a href="index.html">Home</a>
-    <a href="about.html">About Us</a>
-    <a href="shop.html">Shop Our Soaps</a>
-    <a href="contact.html">Contact Us</a>
-    <a href="cart.html" id="cart-link">🛒 View Your Cart (0)</a>
-    <a href="orders.html">📦 My Orders</a>
-</nav>
     </header>
 
     <section class="about-section">
@@ -67,7 +58,45 @@
         </div>
     </section>
     <script src="cart.js"></script>
+    <script src="cart.js?v=2"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    fetch("header.html")
+        .then(response => response.text())
+        .then(data => {
+            const placeholder = document.getElementById("header-placeholder");
+            if (!placeholder) return;
+
+            placeholder.innerHTML = data;
+
+            const menuBtn = document.getElementById("menu-btn");
+            const dropdownMenu = document.getElementById("dropdown-menu");
+
+            if (menuBtn && dropdownMenu) {
+                menuBtn.addEventListener("click", function (event) {
+                    event.stopPropagation();
+                    dropdownMenu.classList.toggle("show");
+                });
+
+                document.addEventListener("click", function (event) {
+                    if (!menuBtn.contains(event.target) && !dropdownMenu.contains(event.target)) {
+                        dropdownMenu.classList.remove("show");
+                    }
+                });
+            }
+
+            if (typeof updateCartCount === "function") {
+                updateCartCount();
+            }
+        })
+        .catch(error => {
+            console.error("HEADER LOAD ERROR:", error);
+        });
+});
+</script>
 </body>
+
+</html>
     <footer class="footer">
     <div class="container">
         <p>&copy; 2026 Thomas Family Soaps. All rights reserved.</p>
@@ -79,4 +108,3 @@
         </p>
     </div>
 </footer>
-</html>

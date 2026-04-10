@@ -1,156 +1,95 @@
 body {
+    background: #f8d7da;
+    font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    font-family: Georgia, serif;
-    background: linear-gradient(to bottom, #ef4136, #f86a5e);
-    color: white;
 }
 
+/* Header */
 .hero {
     text-align: center;
-    padding: 30px;
-    position: relative;
+    padding: 30px 20px;
+    background: #d62828;
+    color: white;
 }
 
 .logo {
     width: 120px;
-    display: block;
-    margin: 0 auto 15px;
+    height: auto;
+    margin-bottom: 15px;
 }
 
-.hero h2 {
-    text-align: center;
-    font-size: 56px;
-    margin: 10px 0;
-}
-
-.tagline {
-    font-size: 22px;
-    margin-bottom: 20px
-}
-
-#email {
-    text-decoration: underline;
-    color: #ef4136;
-}
-
+/* Navbar */
 .navbar {
-    display: flex;
-    justify-content: center;
-    gap: 40px;
+    margin-top: 20px;
 }
 
 .navbar a {
     color: white;
     text-decoration: none;
-    font-size: 20px;
+    margin: 0 15px;
     font-weight: bold;
+    font-size: 18px;
 }
 
 .navbar a:hover {
     text-decoration: underline;
 }
 
-.cart-icon {
-    position: absolute;
-    top: 20px;
-    right: 30px;
-    display: inline-block;
-    font-size: 32px;
-}
-
-.cart-count {
-    position: absolute;
-    top: -6px;
-    right: -6px;
-    background: white;
-    color: #ef4136;
-    border-radius: 50%;
-    width: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-}
-
+/* Contact Section */
 .contact-section {
-    display: flex;
-    justify-content: center;
-    padding: 50px 20px;
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 20px;
 }
 
 .contact-card {
     background: white;
     color: #333;
-    width: 700px;
-    max-width: 90%;
+    text-align: center;
     border-radius: 16px;
     padding: 40px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.2)
+    box-shadow: 0 6px 18px rgba(0,0,0,0.18);
 }
 
 .contact-card h2 {
-    text-align: center;
-    font-size: 42px;
-    color: #ef4136;
+    font-size: 36px;
+    color: #d62828;
+    margin-bottom: 20px;
 }
 
 .contact-text {
-    text-align: center;
     font-size: 18px;
-    margin-bottom: 30px;
+    line-height: 1.7;
+    margin-bottom: 25px;
+    color: #333;
 }
 
 .contact-info {
-    text-align: center;
-    margin-bottom: 30px;
+    margin-top: 20px;
 }
 
 .contact-info a {
-    color: white;
+    color: #d62828;
     text-decoration: underline;
     font-weight: bold;
     font-size: 20px;
+    word-break: break-word;
 }
 
-.contact-form {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    width: 100%;
-    max-width: 500px;
-    margin: 40px auto;
+.contact-info a:hover {
+    color: #a61e1e;
 }
 
-.contact-form input,
-.contact-form textarea {
-    width: 100%;
-    max-width: 500px;
-    padding: 14px;
-    margin: 12px auto;
-    border: 2px solid #ef4136;
-    font-size: 16px;
-    box-sizing: border-box;
-    display: block;
-}
-
-.contact-form button {
-     width: 220px;
-    padding: 12px;
-    margin: 20px auto 0;
-    display: block;
-    background: #ef4136;
-    color: white;
-    border: 2px solid white;
-    border-radius: 8px;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
+/* Footer */
+.footer {
+    margin-top: 50px;
+    padding: 20px;
     text-align: center;
-}
-
-.contact-form button:hover {
-    background: #d8342a;
+    background: #d62828;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
 }
 
 .footer-links {
@@ -165,4 +104,61 @@ body {
 
 .footer-links a:hover {
     text-decoration: underline;
+}
+
+.floating-menu-wrapper {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 2000;
+}
+
+.menu-btn {
+    background: white;
+    color: #d62828;
+    border: 2px solid #d62828;
+    padding: 8px 12px;
+    font-size: 22px;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s ease;
+    line-height: 1;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.menu-btn:hover {
+    background: #f8d7da;
+    color: #a61b1b;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 110%;
+    left: 0;
+    background: white;
+    min-width: 230px;
+    border-radius: 12px;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+    padding: 10px;
+}
+
+.dropdown-menu a {
+    display: block;
+    text-decoration: none;
+    color: #d62828;
+    font-weight: bold;
+    padding: 12px;
+    border-radius: 8px;
+    transition: 0.3s ease;
+}
+
+.dropdown-menu a:hover {
+    background: #f8d7da;
+    color: #a61b1b;
+}
+
+.dropdown-menu.show {
+    display: block;
 }

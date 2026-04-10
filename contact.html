@@ -1,58 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" href="contact.css">
-        <title>Contact Us | Thomas Family Soaps</title>
-    </head>
-    <body>
-        <header class="hero">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="contact.css">
+    <title>Contact Us | Thomas Family Soaps</title>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    <header class="hero">
         <img src="tfs logo.png" alt="Thomas family soaps logo" class="logo">
-        <nav class="navbar">
-    <a href="index.html">Home</a>
-    <a href="about.html">About Us</a>
-    <a href="shop.html">Shop Our Soaps</a>
-    <a href="contact.html">Contact Us</a>
-    <a href="cart.html" id="cart-link">🛒 View Your Cart (0)</a>
-    <a href="orders.html">📦 My Orders</a>
-</nav>
-        </header>
-        <main class="contact-section">
-            <div class="contact-card">
-                <h2>Contact Us</h2>
-                <p class="contact-text">
-                    We'd love to hear from you! Whether you have questions about our soaps,
-                    custom orders, scents, or anything else, feel free to reach out.
-                </p>
+
+    </header>
+
+    <main class="contact-section">
+        <div class="contact-card">
+            <h2>Contact Us</h2>
+
+            <p class="contact-text">
+                We'd love to hear from you! Whether you have questions about our soaps,
+                custom orders, scents, or anything else, feel free to reach out.
+            </p>
+
             <div class="contact-info">
-                <h3>Email</h3>
-                <p>
-                    <a href="mailto:thomasfamilysoaps@gmail.com" id="email">thomasfamilysoaps@gmail.com</a>
+                <p class="contact-text">
+                    You can reach us anytime at:
+                    <br><br>
+                    <strong>
+                        <a href="mailto:thomasfamilysoaps@gmail.com">
+                            thomasfamilysoaps@gmail.com
+                        </a>
+                    </strong>
                 </p>
-                </div>
-                <form class="contact-form" action="https://formspree.io/f/xkopprlr" method="POST">
-    <input type="text" name="name" placeholder="Your Name" required>
-
-    <input type="email" name="email" placeholder="Your Email" required> 
-
-    <textarea name="message" placeholder="Your Message" rows="6" required></textarea>
-
-    <button type="submit">Send Message</button>
-</form>
             </div>
-        </main>
-        <script src="cart.js"></script>
-    </body>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Thomas Family Soaps. All rights reserved.</p>
+            <p class="footer-links">
+                <a href="legal.html#privacy-policy">Privacy Policy</a> |
+                <a href="legal.html#terms-conditions">Terms &amp; Conditions</a> |
+                <a href="legal.html#refund-policy">Refund Policy</a> |
+                <a href="legal.html#shipping-policy">Shipping Policy</a>
+            </p>
+        </div>
+    </footer>
+
+    <script src="cart.js?v=3"></script>
+    <script src="cart.js?v=2"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    fetch("header.html")
+        .then(response => response.text())
+        .then(data => {
+            const placeholder = document.getElementById("header-placeholder");
+            if (!placeholder) return;
+
+            placeholder.innerHTML = data;
+
+            const menuBtn = document.getElementById("menu-btn");
+            const dropdownMenu = document.getElementById("dropdown-menu");
+
+            if (menuBtn && dropdownMenu) {
+                menuBtn.addEventListener("click", function (event) {
+                    event.stopPropagation();
+                    dropdownMenu.classList.toggle("show");
+                });
+
+                document.addEventListener("click", function (event) {
+                    if (!menuBtn.contains(event.target) && !dropdownMenu.contains(event.target)) {
+                        dropdownMenu.classList.remove("show");
+                    }
+                });
+            }
+
+            if (typeof updateCartCount === "function") {
+                updateCartCount();
+            }
+        })
+        .catch(error => {
+            console.error("HEADER LOAD ERROR:", error);
+        });
+});
+</script>
+</body>
 </html>
-<footer class="footer">
-    <div class="container">
-        <p>&copy; 2026 Thomas Family Soaps. All rights reserved.</p>
-        <p class="footer-links">
-            <a href="legal.html#privacy-policy">Privacy Policy</a> |
-            <a href="legal.html#terms-conditions">Terms &amp; Conditions</a> |
-            <a href="legal.html#refund-policy">Refund Policy</a> |
-            <a href="legal.html#shipping-policy">Shipping Policy</a>
-        </p>
-    </div>
-</footer>

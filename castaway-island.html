@@ -1,0 +1,37 @@
+<div id="header-placeholder"></div>
+<script src="cart.js?v=2"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    fetch("header.html")
+        .then(response => response.text())
+        .then(data => {
+            const placeholder = document.getElementById("header-placeholder");
+            if (!placeholder) return;
+
+            placeholder.innerHTML = data;
+
+            const menuBtn = document.getElementById("menu-btn");
+            const dropdownMenu = document.getElementById("dropdown-menu");
+
+            if (menuBtn && dropdownMenu) {
+                menuBtn.addEventListener("click", function (event) {
+                    event.stopPropagation();
+                    dropdownMenu.classList.toggle("show");
+                });
+
+                document.addEventListener("click", function (event) {
+                    if (!menuBtn.contains(event.target) && !dropdownMenu.contains(event.target)) {
+                        dropdownMenu.classList.remove("show");
+                    }
+                });
+            }
+
+            if (typeof updateCartCount === "function") {
+                updateCartCount();
+            }
+        })
+        .catch(error => {
+            console.error("HEADER LOAD ERROR:", error);
+        });
+});
+</script>
