@@ -523,8 +523,8 @@ app.post("/checkout", async (req, res) => {
             });
         }
 
-        const shipping = calculateShipping(cart);
-        const stock = readStock();
+       const shipping = calculateShipping(cart);
+const stock = await readStock();
 
         for (const item of cart) {
             const available = stock[item.name] ?? 0;
