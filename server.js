@@ -6,10 +6,16 @@ const cors = require("cors");
 const path = require("path");
 const fs = require("fs");
 const session = require("express-session");
+const { createClient } = require("@supabase/supabase-js");
 
 const app = express();
 const PORT = process.env.PORT || 4242;
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
+
+const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 const STOCK_FILE = path.join(__dirname, "stock.json");
 const ORDERS_FILE = path.join(__dirname, "orders.json");
@@ -162,6 +168,31 @@ function findOrderByOrderNumber(orderNumber) {
 // -------------------------
 // PAGE ROUTES
 // -------------------------
+app.get("/test-supabase", async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from("orders")
+            .select("*")
+            .limit(1);
+
+        if (error) {
+            throw error;
+        }
+
+        res.json({
+            success: true,
+            message: "Supabase connection worked",
+            data
+        });
+    } catch (err) {
+        console.error("Supabase test failed:", err.message);
+        res.status(500).json({
+            success: false,
+            error: err.message
+        });
+    }
+});
+
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "index.html"));
 });
