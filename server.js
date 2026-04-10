@@ -642,7 +642,6 @@ app.post("/webhook", async (req, res) => {
 
                 items: cart,
                 subtotal: Number(subtotal || 0),
-                shipping_total: Number(shipping || 0),
                 total: Number(total || 0),
                 status: "Paid",
 
