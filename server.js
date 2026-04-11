@@ -235,14 +235,22 @@ async function deleteOrderByOrderNumber(orderNumber) {
 
 // -------------------------
 // ADMIN LOGIN ROUTES
-// -------------------------
 app.post("/admin-login", (req, res) => {
-    const { username, password } = req.body;
+    const username = String(req.body.username || "").trim();
+    const password = String(req.body.password || "").trim();
 
-if (
-    (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) ||
-    (username === ADMIN_USERNAME_2 && password === ADMIN_PASSWORD_2)
-) 
+    const admin1Match =
+        username === String(ADMIN_USERNAME || "").trim() &&
+        password === String(ADMIN_PASSWORD || "").trim();
+
+    const admin2Match =
+        username === String(ADMIN_USERNAME_2 || "").trim() &&
+        password === String(ADMIN_PASSWORD_2 || "").trim();
+
+    if (admin1Match || admin2Match) {
+        req.session.isAdmin = true;
+        return res.json({ success: true });
+    }
 
     return res.status(401).json({
         success: false,
