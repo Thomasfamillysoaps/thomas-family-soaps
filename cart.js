@@ -526,6 +526,7 @@ async function displayOrders() {
                     <p>Subtotal: $${Number(order.subtotal || 0).toFixed(2)}</p>
                     <p>Shipping: $${Number(order.shipping_total || 0).toFixed(2)}</p>
                     <p><strong>Total: $${Number(order.total || 0).toFixed(2)}</strong></p>
+                    <p><strong>Tracking Number:</strong> ${order.tracking_number || "Not available yet"}</p>
                 </div>
             `;
         });
