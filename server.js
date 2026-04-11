@@ -271,7 +271,19 @@ app.get("/api/admin/check", (req, res) => {
 
     return res.status(401).json({ loggedIn: false });
 });
-
+console.log("LOGIN BODY:", req.body);
+console.log("ENV CHECK:", {
+  admin1UserExists: !!ADMIN_USERNAME,
+  admin1PassExists: !!ADMIN_PASSWORD,
+  admin2UserExists: !!ADMIN_USERNAME_2,
+  admin2PassExists: !!ADMIN_PASSWORD_2
+});
+console.log("MATCH CHECK:", {
+  admin1UserMatch: username === String(ADMIN_USERNAME || "").trim(),
+  admin1PassMatch: password === String(ADMIN_PASSWORD || "").trim(),
+  admin2UserMatch: username === String(ADMIN_USERNAME_2 || "").trim(),
+  admin2PassMatch: password === String(ADMIN_PASSWORD_2 || "").trim()
+});
 // -------------------------
 // TEST SUPABASE
 // -------------------------
