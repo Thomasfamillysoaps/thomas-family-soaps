@@ -1,0 +1,155 @@
+/* =========================
+   GLOBAL STYLES
+========================= */
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #ffe5e5; /* light pink */
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.store-header {
+    background-color: #d62828;
+    color: white;
+    text-align: center;
+    padding: 20px 10px;
+}
+
+.logo {
+    width: 80px;
+    display: block;
+    margin: 0 auto 10px;
+}
+
+/* =========================
+   PRODUCT PAGE LAYOUT
+========================= */
+
+.product-page {
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+/* =========================
+   PRODUCT CARD
+========================= */
+
+.product-card {
+    background: white;
+    max-width: 500px;
+    width: 100%;
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+/* =========================
+   IMAGE
+========================= */
+
+.product-image {
+    width: 100%;
+    max-width: 300px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+/* =========================
+   TEXT
+========================= */
+
+.product-card h2 {
+    color: #d62828;
+    margin-bottom: 10px;
+    font-size: 1.8rem;
+}
+
+.price {
+    font-size: 1.4rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.description {
+    font-size: 0.95rem;
+    color: #333;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+/* =========================
+   QUANTITY SELECT
+========================= */
+
+select {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    margin-bottom: 15px;
+    font-size: 1rem;
+    width: 100%;
+}
+
+/* =========================
+   STOCK TEXT
+========================= */
+
+#stock-castaway {
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+/* =========================
+   BUTTON
+========================= */
+
+button {
+    background-color: #d62828;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.2s ease;
+}
+
+button:hover {
+    background-color: white;
+    color: #d62828;
+    border: 2px solid #d62828;
+}
+
+/* =========================
+   FOOTER
+========================= */
+
+.store-footer {
+    text-align: center;
+    padding: 15px;
+    background-color: #d62828;
+    color: white;
+    margin-top: 40px;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 600px) {
+    .product-card {
+        padding: 20px;
+    }
+
+    .product-image {
+        max-width: 100%;
+    }
+}

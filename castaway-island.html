@@ -1,7 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Castaway Island | Thomas Family Soaps</title>
+    <link rel="stylesheet" href="castaway.css">
+</head>
+<body>
+
 <div id="header-placeholder"></div>
+
+<header class="store-header">
+    <img src="tfs logo.png" alt="Thomas Family Soaps Logo" class="logo">
+    <h1>Castaway Island</h1>
+</header>
+
+<main class="product-page">
+
+    <section class="product-card">
+
+        <img src="castaway.png" alt="Castaway Island Soap" class="product-image">
+
+        <h2>Castaway Island</h2>
+
+        <p class="price">$7.00</p>
+
+        <p class="description">
+            Escape to a tropical paradise with Castaway Island. This refreshing blend
+            captures the scent of ocean breeze, sun-soaked citrus, and soft island florals.
+            Clean, bright, and relaxing — like a beach day in every wash.
+        </p>
+
+        <!-- Quantity -->
+        <label for="qty-castaway">Quantity:</label>
+        <select id="qty-castaway">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+        </select>
+
+        <!-- Stock -->
+        <p id="stock-castaway">Loading stock...</p>
+
+        <!-- Add to Cart -->
+        <button 
+            id="btn-castaway"
+            onclick="addToCartWithQuantity(
+                'Castaway Island',
+                7,
+                'castaway.jpg',
+                'qty-castaway',
+                'stock-castaway',
+                'btn-castaway'
+            )"
+        >
+            Add to Cart
+        </button>
+
+    </section>
+
+</main>
+
+<footer class="store-footer">
+    <p>&copy; 2026 Thomas Family Soaps. All rights reserved.</p>
+</footer>
+
+<!-- Scripts -->
 <script src="cart.js?v=2"></script>
+
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+
+    // Load shared header
     fetch("header.html")
         .then(response => response.text())
         .then(data => {
@@ -33,5 +105,14 @@ document.addEventListener("DOMContentLoaded", function () {
         .catch(error => {
             console.error("HEADER LOAD ERROR:", error);
         });
+
+    // Update stock display
+    if (typeof updateStockDisplay === "function") {
+        updateStockDisplay("Castaway Island", "stock-castaway", "btn-castaway");
+    }
+
 });
 </script>
+
+</body>
+</html>
