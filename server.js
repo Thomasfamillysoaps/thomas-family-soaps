@@ -1,9 +1,9 @@
-require("dotenv").config();
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, ".env") });
 
 const express = require("express");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const cors = require("cors");
-const path = require("path");
 const fs = require("fs");
 const session = require("express-session");
 const { createClient } = require("@supabase/supabase-js");
