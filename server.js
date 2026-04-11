@@ -21,9 +21,11 @@ const STOCK_FILE = path.join(__dirname, "stock.json");
 
 // SIMPLE ADMIN LOGIN
 // CHANGE THESE LATER
-const ADMIN_USER = "admin";
-const ADMIN_PASS = "hellyea2020!";
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
+const ADMIN_USERNAME_2 = process.env.ADMIN_USERNAME_2;
+const ADMIN_PASSWORD_2 = process.env.ADMIN_PASSWORD_2;
 // -------------------------
 // CACHE FIX FOR cart.js?v=2
 // -------------------------
@@ -237,10 +239,10 @@ async function deleteOrderByOrderNumber(orderNumber) {
 app.post("/admin-login", (req, res) => {
     const { username, password } = req.body;
 
-    if (username === ADMIN_USER && password === ADMIN_PASS) {
-        req.session.isAdmin = true;
-        return res.json({ success: true });
-    }
+if (
+    (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) ||
+    (username === ADMIN_USERNAME_2 && password === ADMIN_PASSWORD_2)
+) 
 
     return res.status(401).json({
         success: false,
