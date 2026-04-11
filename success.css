@@ -235,3 +235,50 @@ body {
 .dropdown-menu.show {
     display: block;
 }
+.order-warning-box {
+    background: #fff3cd;
+    border: 2px solid #f0c36d;
+    color: #7a4b00;
+    padding: 18px;
+    margin: 20px 0;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.order-warning-box h3 {
+    margin: 0 0 10px;
+    font-size: 1.3rem;
+}
+
+.order-warning-box p {
+    margin: 8px 0;
+    line-height: 1.5;
+}
+
+.warning-small {
+    font-weight: bold;
+}
+
+.order-number-box {
+    background: #ffffff;
+    border: 2px dashed #d62828;
+    padding: 18px;
+    margin: 20px 0;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.order-number-label {
+    margin: 0 0 8px;
+    font-weight: bold;
+    font-size: 1.05rem;
+}
+
+.order-number {
+    margin: 0;
+    font-size: 1.6rem;
+    font-weight: bold;
+    color: #d62828;
+    word-break: break-word;
+}

@@ -248,33 +248,112 @@ function renderOrders(orders) {
     ordersList.innerHTML = orders.map(order => {
         const items = Array.isArray(order.items) ? order.items : [];
 
-        const itemsHtml = items.map(item => `
-            <p>
-                🧼 ${escapeHtml(item.name)} — Qty: ${Number(item.quantity || 0)}
-                — ${formatMoney(Number(item.price || 0) * Number(item.quantity || 0))}
-            </p>
-        `).join("");
+        const itemsHtml = items.length
+            ? items.map(item => `
+                <p>
+                    🧼 ${escapeHtml(item.name)} — Qty: ${Number(item.quantity || 0)}
+                    — ${formatMoney(Number(item.price || 0) * Number(item.quantity || 0))}
+                </p>
+            `).join("")
+            : `<p>No items found for this order.</p>`;
 
         const shippingAddress = formatShippingAddress(order);
+        const safeOrderNumber = escapeHtml(order.order_number || "N/A");
+        const safeOrderNumberForJs = escapeSingleQuotes(order.order_number || "");
+        const currentStatus = escapeHtml(order.status || "Paid");
+        const currentTracking = escapeHtml(order.tracking_number || "");
 
         return `
-           <h3>Order #${escapeHtml(order.order_number || "N/A")}</h3>
-<p class="order-status"><strong>Status:</strong> ${escapeHtml(order.status || "Paid")}</p>
-...
-<p><strong>Date:</strong> ${escapeHtml(order.created_at || "Not provided")}</p>
-<p><strong>Name:</strong> ${escapeHtml(order.customer_name || "Not provided")}</p>
-<p><strong>Email:</strong> ${escapeHtml(order.customer_email || "Not provided")}</p>
-<p><strong>Shipping Method:</strong> ${escapeHtml(order.shipping_method || "Not provided")}</p>
-<p><strong>Shipping Address:</strong> ${escapeHtml(shippingAddress || "Not provided")}</p>
-<button
-    class="delete-order-btn"
-    type="button"
-    onclick="deleteOrder('${escapeSingleQuotes(order.order_number || "")}')"
->
-    Delete Order
-</button>
+            <div class="order-card">
+                <div class="order-card-top">
+                    <h3>Order #${safeOrderNumber}</h3>
+                    <p class="order-status"><strong>Status:</strong> ${currentStatus}</p>
+                </div>
+
+                <div class="order-meta">
+                    <p><strong>Date:</strong> ${escapeHtml(order.created_at || "Not provided")}</p>
+                    <p><strong>Name:</strong> ${escapeHtml(order.customer_name || "Not provided")}</p>
+                    <p><strong>Email:</strong> ${escapeHtml(order.customer_email || "Not provided")}</p>
+                    <p><strong>Shipping Method:</strong> ${escapeHtml(order.shipping_method || "Not provided")}</p>
+                    <p><strong>Shipping Address:</strong> ${escapeHtml(shippingAddress || "Not provided")}</p>
+                    <p><strong>Tracking:</strong> ${currentTracking || "Not added yet"}</p>
+                </div>
+
+                <div class="order-items">
+                    <h4>Items</h4>
+                    ${itemsHtml}
+                </div>
+
+                <div class="order-shipping-tools">
+                    <input
+                        type="text"
+                        id="tracking-${escapeHtml(order.order_number || "")}"
+                        class="tracking-input"
+                        placeholder="Enter tracking number"
+                        value="${currentTracking}"
+                    >
+
+                    <button
+                        class="save-btn"
+                        type="button"
+                        onclick="markOrderShipped('${safeOrderNumberForJs}')"
+                    >
+                        Mark Shipped
+                    </button>
+
+                    <button
+                        class="delete-order-btn"
+                        type="button"
+                        onclick="deleteOrder('${safeOrderNumberForJs}')"
+                    >
+                        Delete Order
+                    </button>
+                </div>
+            </div>
         `;
     }).join("");
+}
+
+async function markOrderShipped(orderNumber) {
+    if (!orderNumber) {
+        alert("This order is missing an order number.");
+        return;
+    }
+
+    const trackingInput = document.getElementById(`tracking-${orderNumber}`);
+    const trackingNumber = trackingInput ? trackingInput.value.trim() : "";
+
+    if (!trackingNumber) {
+        alert("Add a tracking number before marking this order shipped.");
+        return;
+    }
+
+    try {
+        const response = await fetch("/api/admin/update-order-shipping", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: "include",
+            body: JSON.stringify({
+                orderNumber,
+                status: "Shipped",
+                trackingNumber
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || "Failed to update shipping info.");
+        }
+
+        setStatus(`Order ${orderNumber} marked as shipped.`, "success");
+        loadOrders();
+    } catch (error) {
+        console.error("MARK SHIPPED ERROR:", error);
+        setStatus(error.message || "Could not update shipping info.", "error");
+    }
 }
 
 async function deleteOrder(orderNumber) {

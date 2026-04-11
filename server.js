@@ -374,6 +374,44 @@ app.post("/api/admin/update-stock", requireAdmin, async (req, res) => {
     }
 });
 
+// im adding this admin route here cause i cant find where else to put it
+app.post("/api/admin/update-order-shipping", requireAdmin, async (req, res) => {
+    try {
+        const { orderNumber, status, trackingNumber } = req.body;
+
+        if (!orderNumber) {
+            return res.status(400).json({ error: "Order number is required." });
+        }
+
+        const updateData = {
+            status: status || "Shipped",
+            tracking_number: trackingNumber || null
+        };
+
+        const { data, error } = await supabase
+            .from("orders")
+            .update(updateData)
+            .eq("order_number", orderNumber)
+            .select()
+            .single();
+
+        if (error) {
+            console.error("SUPABASE UPDATE SHIPPING ERROR:", error);
+            return res.status(500).json({ error: "Failed to update shipping info." });
+        }
+
+        res.json({
+            success: true,
+            order: data
+        });
+    } catch (error) {
+        console.error("UPDATE ORDER SHIPPING ROUTE ERROR:", error);
+        res.status(500).json({ error: "Server error updating shipping info." });
+    }
+});
+
+//end of new admin route hopefully this isnt shit lol
+
 // -------------------------
 // ORDER ROUTES
 // -------------------------
@@ -742,7 +780,6 @@ console.log("✅ Stock updated in Supabase");
 
     res.json({ received: true });
 });
-
 // -------------------------
 // START SERVER
 // -------------------------
