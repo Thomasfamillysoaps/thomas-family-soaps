@@ -623,6 +623,7 @@ function renderLookupOrder(order) {
             <h3>Order ${order.order_number || ""}</h3>
             <p>${order.created_at || ""}</p>
             <p>Status: ${order.status || "Paid"}</p>
+            <p><strong>Tracking Number:</strong> ${order.tracking_number || "Not available yet"}</p>
             <p><strong>Name:</strong> ${order.customer_name || "Not provided"}</p>
             <p><strong>Email:</strong> ${order.customer_email || "Not provided"}</p>
             <p><strong>Shipping Address:</strong> ${order.shipping_address || "Not provided"}</p>
